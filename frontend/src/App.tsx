@@ -19,6 +19,11 @@ function App() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [selectedSource, setSelectedSource] = useState<Source | null>(null);
+
+  const selectedSourceUrl = selectedSource
+    ? `${selectedSource.document_url ?? "/cv.html"}#${selectedSource.anchor ?? `chunk-${selectedSource.chunk_index}`}`
+    : "";
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault();
@@ -39,6 +44,7 @@ function App() {
     setMessages(nextMessages);
     setInput("");
     setError("");
+    setSelectedSource(null);
     setIsLoading(true);
 
     try {
@@ -78,6 +84,10 @@ function App() {
             Ask focused questions about experience, skills, projects, and impact
             using the curated CV knowledge base.
           </p>
+
+          <a className="download-cv" href="/cv.pdf" download="Brielle Johnston CV.pdf">
+            Download CV
+          </a>
 
           <div className="rail-metrics" aria-label="Assistant qualities">
             <div>
@@ -131,9 +141,14 @@ function App() {
                   {message.sources && message.sources.length > 0 ? (
                     <div className="sources" aria-label="Sources">
                       {message.sources.map((source) => (
-                        <span className="source" key={source.id}>
+                        <button
+                          className="source"
+                          key={source.id}
+                          onClick={() => setSelectedSource(source)}
+                          type="button"
+                        >
                           {source.title}
-                        </span>
+                        </button>
                       ))}
                     </div>
                   ) : null}
@@ -151,7 +166,7 @@ function App() {
 
           {error ? <p className="error-message">{error}</p> : null}
 
-          <form className="composer" onSubmit={handleSubmit}>
+          <form className="composer" onSubmit={handleSubmit} autoComplete="off">
             <div className="input-wrap">
               <label className="sr-only" htmlFor="chat-message">
                 Ask a question
@@ -170,6 +185,25 @@ function App() {
             </button>
           </form>
         </section>
+
+        {selectedSource ? (
+          <aside className="document-panel" aria-label="CV source document">
+            <header className="document-header">
+              <div>
+                <p className="eyebrow">Source document</p>
+                <h2>{selectedSource.title}</h2>
+              </div>
+              <button type="button" onClick={() => setSelectedSource(null)}>
+                Close
+              </button>
+            </header>
+            <iframe
+              key={selectedSourceUrl}
+              src={selectedSourceUrl}
+              title="CV source document"
+            />
+          </aside>
+        ) : null}
       </section>
     </main>
   );

@@ -12,6 +12,10 @@
       "destination": "/api/index.py"
     },
     {
+      "source": "/cv.html",
+      "destination": "/cv.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

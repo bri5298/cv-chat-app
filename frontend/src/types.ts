@@ -1,6 +1,9 @@
 export type Source = {
   id: string;
   title: string;
+  chunk_index?: number;
+  document_url?: string;
+  anchor?: string;
 };
 
 export type ChatRequest = {

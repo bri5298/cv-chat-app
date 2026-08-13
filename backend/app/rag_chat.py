@@ -11,6 +11,7 @@ from groq import Groq
 from app.models import Source
 
 KNOWLEDGE_PATH = os.path.join(Path(__file__).parent, "data", "knowledge.json")
+SYSTEM_PROMPT_PATH = Path(__file__).parent / "prompts" / "system.md"
 DEFAULT_MODEL = "llama-3.1-8b-instant"
 FREE_MODEL_IDS = {
     1: "llama-3.1-8b-instant",
@@ -29,16 +30,8 @@ FALLBACK_ERROR_TERMS = (
     "maximum",
     "limit",
 )
-SYSTEM_MESSAGE = (
-    "Answer using only the provided knowledge base context. "
-    "If the context does not contain the answer, say you do not know. "
-    "Each context chunk has a chunk_index and model_content. "
-    "At the end of your answer, include only the chunk indexes that directly support the answer. "
-    "Use this exact marker format for each source: <<chunk_index=3>>. "
-    "Do not cite chunks you did not use. "
-    "If you do not know the answer, do not include source markers."
-)
-CHUNK_INDEX_PATTERN = re.compile(r"<<\s*chunk[-_]index(?:-|=)(\d+)\s*>>")
+SYSTEM_MESSAGE = SYSTEM_PROMPT_PATH.read_text(encoding="utf-8").strip()
+CHUNK_INDEX_PATTERN = re.compile(r"<<\s*(?:chunk[-_\s]?index\s*[-=:]?\s*)?(\d+)\s*>>", re.IGNORECASE)
 
 def load_knowledge() -> list[dict[str, Any]]:
     if not os.path.exists(KNOWLEDGE_PATH):
@@ -64,9 +57,13 @@ def get_knowledge() -> list[dict[str, Any]]:
 
 
 def source_from_record(record: dict[str, Any], index: int) -> Source:
+    source_ref = record.get("source_ref") if isinstance(record.get("source_ref"), dict) else {}
     return Source(
         id=str(record.get("id") or record.get("slug") or f"source-{index + 1}"),
         title=str(record.get("title") or record.get("name") or f"Source {index + 1}"),
+        chunk_index=record.get("chunk_index") if isinstance(record.get("chunk_index"), int) else None,
+        document_url=source_ref.get("document_url"),
+        anchor=source_ref.get("anchor"),
     )
 
 
