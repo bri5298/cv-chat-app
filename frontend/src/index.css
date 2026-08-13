@@ -1,0 +1,65 @@
+:root {
+  --app-bg: #edf6ff;
+  --surface: #ffffff;
+  --rail-bg: #0b1f42;
+  --chat-bg: #f7fbff;
+  --surface-muted: #eff6ff;
+  --message-bg: #ffffff;
+  --text: #172d42;
+  --text-strong: #0f2440;
+  --text-muted: #5f7288;
+  --border: #d8e8f8;
+  --border-strong: #b9d4f0;
+  --accent: #2563eb;
+  --accent-strong: #1d4ed8;
+  --accent-blue: #2563eb;
+  --accent-hover: #1e40af;
+  --source-text: #1d4ed8;
+  --focus-ring: rgba(37, 99, 235, 0.18);
+  --danger: #9f1239;
+  --danger-bg: #fff1f2;
+  --danger-border: #fecdd3;
+  --disabled-bg: #eaf3ff;
+  --shadow: 0 34px 90px rgba(15, 35, 70, 0.16);
+  --body-font: "Aptos", "Segoe UI", sans-serif;
+  --heading-font: "Aptos Display", "Segoe UI", sans-serif;
+
+  color: var(--text);
+  background: var(--app-bg);
+  font-family: var(--body-font);
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: 0;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--app-bg);
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+#root {
+  min-height: 100vh;
+}

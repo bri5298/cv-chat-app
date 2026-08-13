@@ -1,0 +1,24 @@
+.env
+notebooks/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+backend/.venv/
+backend/dist/
+backend/*.egg-info/
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Local data and generated artifacts
+backend/data/knowledge.json
+*.log
+
+# Virtual environments
+.venv/
