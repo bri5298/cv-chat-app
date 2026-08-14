@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEventHandler } from "react";
 import { sendChatMessage } from "./api";
+import { faqItems } from "./content/faq.ts";
+import { DownloadIcon } from "./icons/DownloadIcon";
 import type { ChatMessage, Source } from "./types";
 import "./App.css";
 
@@ -9,21 +11,86 @@ type ConversationMessage = ChatMessage & {
 };
 
 const suggestedQuestions = [
-  "What backend projects have I built?",
-  "Which technical skills are strongest?",
-  "Tell me about deployment experience",
+  "Has she taken AI solutions from prototype to production?",
+  "What backend systems has she built for AI applications?",
+  "What machine learning solutions has she built?",
 ];
+
+function getSourceUrl(source: Source) {
+  return `${source.document_url ?? "/cv.html"}#${source.anchor ?? `chunk-${source.chunk_index}`}`;
+}
+
+function renderCitationContent(source: Source) {
+  const lines = (source.content ?? "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length === 0) {
+    return <p>No citation text is available for this source.</p>;
+  }
+
+  if (lines.length === 1) {
+    return <p>{lines[0]}</p>;
+  }
+
+  const metaLines = lines.length > 2 ? lines.slice(0, 2) : lines.slice(0, 1);
+  const detailLines = lines.slice(metaLines.length);
+
+  return (
+    <>
+      <div className="citation-meta">
+        {metaLines.map((line) => (
+          <p key={line}>{line}</p>
+        ))}
+      </div>
+
+      {detailLines.length === 1 ? (
+        <p className="citation-detail">{detailLines[0]}</p>
+      ) : (
+        <ul>
+          {detailLines.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      )}
+    </>
+  );
+}
 
 function App() {
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [selectedSource, setSelectedSource] = useState<Source | null>(null);
+  const [expandedSourceKey, setExpandedSourceKey] = useState<string | null>(null);
+  const [selectedFaqIndex, setSelectedFaqIndex] = useState<number | null>(null);
+  const [modalSource, setModalSource] = useState<Source | null>(null);
 
-  const selectedSourceUrl = selectedSource
-    ? `${selectedSource.document_url ?? "/cv.html"}#${selectedSource.anchor ?? `chunk-${selectedSource.chunk_index}`}`
-    : "";
+  const selectedFaqItem = selectedFaqIndex === null ? null : faqItems[selectedFaqIndex];
+
+  useEffect(() => {
+    if (!modalSource && !selectedFaqItem) {
+      return;
+    }
+
+    const originalBodyOverflow = document.body.style.overflow;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setModalSource(null);
+        setSelectedFaqIndex(null);
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [modalSource, selectedFaqItem]);
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault();
@@ -44,7 +111,8 @@ function App() {
     setMessages(nextMessages);
     setInput("");
     setError("");
-    setSelectedSource(null);
+    setExpandedSourceKey(null);
+    setModalSource(null);
     setIsLoading(true);
 
     try {
@@ -68,53 +136,87 @@ function App() {
     }
   };
 
+  const handleClearConversation = () => {
+    setMessages([]);
+    setInput("");
+    setError("");
+    setExpandedSourceKey(null);
+    setModalSource(null);
+  };
+
+  const canClearConversation = messages.length > 0 || input.trim().length > 0 || Boolean(error);
+
   return (
     <main className="app-shell">
       <section className="workspace" aria-label="CV chat workspace">
         <aside className="profile-rail">
           <div className="brand-lockup">
-            <span className="brand-mark">CV</span>
             <div>
-              <p className="eyebrow">Personal RAG</p>
-              <h1>CV Intelligence</h1>
+              <h1 className="rail-title">Brielle's CV Assistant</h1>
             </div>
           </div>
 
           <p className="rail-copy">
-            Ask focused questions about experience, skills, projects, and impact
-            using the curated CV knowledge base.
+            Is Brielle a good fit for your team? <br />
+            Ask about her experience, skills, projects, and accomplishments. Answers are drawn directly from her CV.
           </p>
 
-          <a className="download-cv" href="/cv.pdf" download="Brielle Johnston CV.pdf">
-            Download CV
-          </a>
+          <section className="rail-faq" aria-label="CV assistant FAQ">
+            <p className="rail-faq-label">FAQ</p>
+            {faqItems.map((item, index) => {
+              return (
+                <div className="rail-faq-item" key={item.question}>
+                  <button
+                    aria-haspopup="dialog"
+                    className="rail-faq-trigger"
+                    onClick={() => setSelectedFaqIndex(index)}
+                    type="button"
+                  >
+                    <span>{item.question}</span>
+                    <span aria-hidden="true">›</span>
+                  </button>
+                </div>
+              );
+            })}
+          </section>
 
-          <div className="rail-metrics" aria-label="Assistant qualities">
-            <div>
-              <span>Mode</span>
-              <strong>Conversational</strong>
-            </div>
-            <div>
-              <span>Source</span>
-              <strong>Knowledge-backed</strong>
-            </div>
-          </div>
+          <a
+            aria-label="Download Brielle Johnston CV"
+            className="download-cv"
+            href="/cv.pdf"
+            download="Brielle Johnston CV.pdf"
+          >
+            <span className="download-cv-full">Download her CV</span>
+            <span className="download-cv-mobile" aria-hidden="true">
+              CV
+              <DownloadIcon />
+            </span>
+          </a>
         </aside>
 
         <section className="chat-panel" aria-label="CV chat">
           <header className="chat-header">
             <div>
-              <p className="eyebrow">Ask the profile</p>
-              <h2>What would you like to know?</h2>
+              <h2>Ask about Brielle's CV</h2>
             </div>
-            <div className="status-pill">Online</div>
+
+            {canClearConversation ? (
+              <button
+                className="clear-conversation"
+                disabled={isLoading}
+                onClick={handleClearConversation}
+                type="button"
+              >
+                Clear conversation
+              </button>
+            ) : null}
           </header>
 
           <div className="message-list" aria-live="polite">
             {messages.length === 0 ? (
               <div className="empty-state">
                 <span>Start with a prompt</span>
-                <p>Choose a question or ask anything specific about the CV.</p>
+                <p>Choose a question or ask about anything specific</p>
                 <div className="suggestions">
                   {suggestedQuestions.map((question) => (
                     <button
@@ -128,32 +230,67 @@ function App() {
                 </div>
               </div>
             ) : (
-              messages.map((message, index) => (
-                <article
-                  className={`message message-${message.role}`}
-                  key={`${message.role}-${index}`}
-                >
-                  <div className="message-label">
-                    {message.role === "user" ? "You" : "Assistant"}
-                  </div>
-                  <p>{message.content}</p>
+              messages.map((message, index) => {
+                const expandedSource = message.sources?.find(
+                  (source) => expandedSourceKey === `${index}-${source.id}`,
+                );
 
-                  {message.sources && message.sources.length > 0 ? (
-                    <div className="sources" aria-label="Sources">
-                      {message.sources.map((source) => (
-                        <button
-                          className="source"
-                          key={source.id}
-                          onClick={() => setSelectedSource(source)}
-                          type="button"
-                        >
-                          {source.title}
-                        </button>
-                      ))}
+                return (
+                  <article
+                    className={`message message-${message.role}`}
+                    key={`${message.role}-${index}`}
+                  >
+                    <div className="message-label">
+                      {message.role === "user" ? "You" : "Assistant"}
                     </div>
-                  ) : null}
-                </article>
-              ))
+                    <p>{message.content}</p>
+
+                    {message.sources && message.sources.length > 0 ? (
+                      <>
+                        <div className="sources" aria-label="Sources">
+                          {message.sources.map((source) => {
+                            const sourceKey = `${index}-${source.id}`;
+
+                            return (
+                              <button
+                                aria-expanded={expandedSourceKey === sourceKey}
+                                className="source"
+                                key={source.id}
+                                onClick={() =>
+                                  setExpandedSourceKey(
+                                    expandedSourceKey === sourceKey ? null : sourceKey,
+                                  )
+                                }
+                                type="button"
+                              >
+                                {source.title}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {expandedSource ? (
+                          <div className="citation-card">
+                            <div className="citation-card-header">
+                              <h3>{expandedSource.title}</h3>
+                              <button
+                                className="citation-card-action"
+                                onClick={() => setModalSource(expandedSource)}
+                                type="button"
+                              >
+                                View it in CV
+                              </button>
+                            </div>
+                            <div className="citation-card-body">
+                              {renderCitationContent(expandedSource)}
+                            </div>
+                          </div>
+                        ) : null}
+                      </>
+                    ) : null}
+                  </article>
+                );
+              })
             )}
 
             {isLoading ? (
@@ -186,25 +323,71 @@ function App() {
           </form>
         </section>
 
-        {selectedSource ? (
-          <aside className="document-panel" aria-label="CV source document">
-            <header className="document-header">
+      </section>
+
+      {selectedFaqItem ? (
+        <div
+          className="cv-modal-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setSelectedFaqIndex(null);
+            }
+          }}
+        >
+          <section
+            aria-labelledby="faq-modal-title"
+            aria-modal="true"
+            className="faq-modal"
+            role="dialog"
+          >
+            <header className="faq-modal-header">
+              <p className="eyebrow">FAQ</p>
+              <button type="button" onClick={() => setSelectedFaqIndex(null)}>
+                Close
+              </button>
+            </header>
+            <div className="faq-modal-body">
+              <h2 id="faq-modal-title">{selectedFaqItem.question}</h2>
+              {selectedFaqItem.answer.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      {modalSource ? (
+        <div
+          className="cv-modal-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setModalSource(null);
+            }
+          }}
+        >
+          <section
+            aria-label={`${modalSource.title} in CV`}
+            aria-modal="true"
+            className="cv-modal"
+            role="dialog"
+          >
+            <header className="cv-modal-header">
               <div>
-                <p className="eyebrow">Source document</p>
-                <h2>{selectedSource.title}</h2>
+                <p className="eyebrow">Source in CV</p>
+                <h2>{modalSource.title}</h2>
               </div>
-              <button type="button" onClick={() => setSelectedSource(null)}>
+              <button type="button" onClick={() => setModalSource(null)}>
                 Close
               </button>
             </header>
             <iframe
-              key={selectedSourceUrl}
-              src={selectedSourceUrl}
+              key={getSourceUrl(modalSource)}
+              src={getSourceUrl(modalSource)}
               title="CV source document"
             />
-          </aside>
-        ) : null}
-      </section>
+          </section>
+        </div>
+      ) : null}
     </main>
   );
 }

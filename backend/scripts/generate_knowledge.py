@@ -1,17 +1,13 @@
 import argparse
 import html
 import json
+import shutil
+import subprocess
 import re
 from pathlib import Path
 from typing import Any
 from xml.etree import ElementTree as ET
 from zipfile import ZipFile
-
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import LETTER
-from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
-from reportlab.lib.units import inch
-from reportlab.platypus import ListFlowable, ListItem, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 WORKSPACE_DIR = ROOT_DIR.parent
@@ -198,167 +194,54 @@ def build_html_document(records: list[dict[str, Any]]) -> str:
 """
 
 
-def build_pdf_document(records: list[dict[str, Any]], output_path: Path) -> None:
-    styles = get_pdf_styles()
-    document = SimpleDocTemplate(
-        str(output_path),
-        pagesize=LETTER,
-        rightMargin=0.65 * inch,
-        leftMargin=0.65 * inch,
-        topMargin=0.55 * inch,
-        bottomMargin=0.55 * inch,
-        title="Brielle Johnston CV",
-        author="Brielle Johnston",
+def convert_to_pdf(input_path: Path, output_path: Path) -> None:
+    converter = find_libreoffice_executable()
+    if converter is None:
+        raise RuntimeError(
+            "LibreOffice was not found. Install LibreOffice and make sure 'soffice' is on PATH, "
+            "or install it in the default Windows/macOS application location."
+        )
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    result = subprocess.run(
+        [
+            str(converter),
+            "--headless",
+            "--convert-to",
+            "pdf",
+            "--outdir",
+            str(output_path.parent),
+            str(input_path),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
     )
 
-    story: list[Any] = []
+    if result.returncode != 0:
+        details = "\n".join(part for part in [result.stdout.strip(), result.stderr.strip()] if part)
+        raise RuntimeError(f"LibreOffice failed to convert {input_path} to PDF.\n{details}")
 
-    for record in records:
-        category = record.get("category")
-        raw_content = str(record.get("content") or "")
-        title = str(record.get("title") or "")
+    generated_path = output_path.parent / f"{input_path.stem}.pdf"
+    if not generated_path.exists():
+        raise RuntimeError(f"LibreOffice did not create the expected PDF: {generated_path}")
 
-        if category == "profile":
-            lines = [line for line in raw_content.splitlines() if line.strip()]
-            if lines:
-                story.append(Paragraph(html.escape(lines[0]), styles["name"]))
-            if len(lines) > 1:
-                story.append(Paragraph(html.escape(lines[1]), styles["profile_title"]))
-            story.append(Spacer(1, 7))
-            continue
-
-        if category == "contact":
-            story.append(Paragraph(html.escape(raw_content), styles["contact"]))
-            story.append(Spacer(1, 10))
-            continue
-
-        story.append(Paragraph(html.escape(title.upper()), styles["section_heading"]))
-
-        if category == "work experience":
-            story.extend(build_work_experience_pdf_flowables(raw_content, styles))
-        elif category == "education":
-            story.extend(build_education_pdf_flowables(raw_content, styles))
-        else:
-            for line in visible_content_lines(raw_content, record.get("section")):
-                story.append(Paragraph(format_label_line(line), styles["body"]))
-
-        story.append(Spacer(1, 8))
-
-    document.build(story)
+    if generated_path != output_path:
+        generated_path.replace(output_path)
 
 
-def get_pdf_styles() -> dict[str, ParagraphStyle]:
-    base_styles = getSampleStyleSheet()
-    return {
-        "name": ParagraphStyle(
-            "CVName",
-            parent=base_styles["Normal"],
-            fontName="Helvetica-Bold",
-            fontSize=22,
-            leading=25,
-            textColor=colors.HexColor("#172033"),
-        ),
-        "profile_title": ParagraphStyle(
-            "CVProfileTitle",
-            parent=base_styles["Normal"],
-            fontName="Helvetica",
-            fontSize=12,
-            leading=15,
-            textColor=colors.HexColor("#172033"),
-        ),
-        "contact": ParagraphStyle(
-            "CVContact",
-            parent=base_styles["Normal"],
-            fontName="Helvetica",
-            fontSize=9,
-            leading=12,
-            textColor=colors.HexColor("#475569"),
-        ),
-        "section_heading": ParagraphStyle(
-            "CVSectionHeading",
-            parent=base_styles["Normal"],
-            fontName="Helvetica-Bold",
-            fontSize=8.5,
-            leading=11,
-            textColor=colors.HexColor("#1d4ed8"),
-            spaceBefore=4,
-            spaceAfter=4,
-        ),
-        "body": ParagraphStyle(
-            "CVBody",
-            parent=base_styles["Normal"],
-            fontName="Helvetica",
-            fontSize=9.5,
-            leading=12.5,
-            textColor=colors.HexColor("#172033"),
-        ),
-        "body_bold": ParagraphStyle(
-            "CVBodyBold",
-            parent=base_styles["Normal"],
-            fontName="Helvetica-Bold",
-            fontSize=9.5,
-            leading=12.5,
-            textColor=colors.HexColor("#172033"),
-        ),
-        "bullet": ParagraphStyle(
-            "CVBullet",
-            parent=base_styles["Normal"],
-            fontName="Helvetica",
-            fontSize=9.2,
-            leading=12.2,
-            leftIndent=0,
-            textColor=colors.HexColor("#172033"),
-        ),
-    }
+def find_libreoffice_executable() -> Path | None:
+    for command in ("soffice", "libreoffice"):
+        executable = shutil.which(command)
+        if executable:
+            return Path(executable)
 
-
-def build_work_experience_pdf_flowables(raw_content: str, styles: dict[str, ParagraphStyle]) -> list[Any]:
-    lines = [line for line in raw_content.splitlines() if line.strip()]
-    if len(lines) < 3:
-        return [Paragraph(html.escape(line), styles["body"]) for line in lines]
-
-    employer, date = split_tabbed_line(lines[0])
-    flowables: list[Any] = [build_pdf_entry_heading(employer, date, styles), Paragraph(html.escape(lines[1]), styles["body_bold"])]
-    flowables.append(build_pdf_bullet_list(lines[2:], styles))
-    return flowables
-
-
-def build_education_pdf_flowables(raw_content: str, styles: dict[str, ParagraphStyle]) -> list[Any]:
-    lines = [line for line in raw_content.splitlines() if line.strip()]
-    if lines and lines[0] == "EDUCATION":
-        lines = lines[1:]
-    if len(lines) < 2:
-        return [Paragraph(html.escape(line), styles["body"]) for line in lines]
-
-    school, date = split_tabbed_line(lines[0])
-    return [build_pdf_entry_heading(school, date, styles), build_pdf_bullet_list(lines[1:], styles)]
-
-
-def build_pdf_entry_heading(left_text: str, right_text: str, styles: dict[str, ParagraphStyle]) -> Table:
-    table = Table(
-        [[Paragraph(html.escape(left_text), styles["body_bold"]), Paragraph(html.escape(right_text), styles["body_bold"])]],
-        colWidths=[4.95 * inch, 1.25 * inch],
-    )
-    table.setStyle(TableStyle([
-        ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("ALIGN", (1, 0), (1, 0), "RIGHT"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 0),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 0),
-        ("TOPPADDING", (0, 0), (-1, -1), 0),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
-    ]))
-    return table
-
-
-def build_pdf_bullet_list(lines: list[str], styles: dict[str, ParagraphStyle]) -> ListFlowable:
-    return ListFlowable(
-        [ListItem(Paragraph(html.escape(line), styles["bullet"]), leftIndent=10) for line in lines],
-        bulletType="bullet",
-        start="circle",
-        leftIndent=14,
-        bulletFontName="Helvetica",
-        bulletFontSize=6,
-    )
+    candidates = [
+        Path(r"C:\Program Files\LibreOffice\program\soffice.exe"),
+        Path(r"C:\Program Files (x86)\LibreOffice\program\soffice.exe"),
+        Path("/Applications/LibreOffice.app/Contents/MacOS/soffice"),
+    ]
+    return next((candidate for candidate in candidates if candidate.exists()), None)
 
 
 def visible_content_lines(raw_content: str, section: object | None = None) -> list[str]:
@@ -577,8 +460,7 @@ def main() -> None:
     args.output.write_text(json.dumps(records, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     args.html_output.parent.mkdir(parents=True, exist_ok=True)
     args.html_output.write_text(build_html_document(records), encoding="utf-8")
-    args.pdf_output.parent.mkdir(parents=True, exist_ok=True)
-    build_pdf_document(records, args.pdf_output)
+    convert_to_pdf(args.cv, args.pdf_output)
     print(f"====> Wrote {len(records)} records to {args.output}")
     print(f"====> Wrote CV HTML to {args.html_output}")
     print(f"====> Wrote CV PDF to {args.pdf_output}")
