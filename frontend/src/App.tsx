@@ -9,9 +9,9 @@ type ConversationMessage = ChatMessage & {
 };
 
 const suggestedQuestions = [
-  "Has she worked on backend development?",
-  "What are the most recent examples of ML models she built?",
-  "Tell me about her production deployment experience",
+  "Has she taken AI solutions from prototype to production?",
+  "What backend systems has she built for AI applications?",
+  "What machine learning solutions has she built?",
 ];
 
 function getSourceUrl(source: Source) {
@@ -135,10 +135,8 @@ function App() {
       <section className="workspace" aria-label="CV chat workspace">
         <aside className="profile-rail">
           <div className="brand-lockup">
-            <span className="brand-mark">CV</span>
             <div>
-              <p className="eyebrow">Chat with a Curriculum Vitae</p>
-              {/* <h1>CV Intelligence</h1> */}
+              <p className="eyebrow">Brielle's CV Assistant</p>
             </div>
           </div>
 
@@ -148,26 +146,14 @@ function App() {
           </p>
 
           <a className="download-cv" href="/cv.pdf" download="Brielle Johnston CV.pdf">
-            Download Brielle's CV
+            Download her CV
           </a>
-
-          {/* <div className="rail-metrics" aria-label="Assistant qualities">
-            <div>
-              <span>Mode</span>
-              <strong>Conversational</strong>
-            </div>
-            <div>
-              <span>Source</span>
-              <strong>Knowledge-backed</strong>
-            </div>
-          </div> */}
         </aside>
 
         <section className="chat-panel" aria-label="CV chat">
           <header className="chat-header">
             <div>
-              <p className="eyebrow">Ask about Brielle</p>
-              <h2>What would you like to know?</h2>
+              <h2>Ask about Brielle's CV</h2>
             </div>
             <div className="status-pill">Built By Brielle Johnston</div>
           </header>
@@ -176,7 +162,7 @@ function App() {
             {messages.length === 0 ? (
               <div className="empty-state">
                 <span>Start with a prompt</span>
-                <p>Choose a question or ask anything specific about the CV.</p>
+                <p>Choose a question or ask about anything specific</p>
                 <div className="suggestions">
                   {suggestedQuestions.map((question) => (
                     <button

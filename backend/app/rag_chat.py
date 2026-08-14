@@ -9,27 +9,16 @@ from fastapi import HTTPException
 from groq import Groq
 
 from app.models import Source
+from app.constants import (
+    FALLBACK_MODEL_IDS,
+    FALLBACK_ERROR_TERMS,
+    TEMPERATURE,
+    ANSWER_MAX_TOKENS,
+)
+
 
 KNOWLEDGE_PATH = os.path.join(Path(__file__).parent, "data", "knowledge.json")
 SYSTEM_PROMPT_PATH = Path(__file__).parent / "prompts" / "system.md"
-DEFAULT_MODEL = "llama-3.1-8b-instant"
-FREE_MODEL_IDS = {
-    1: "llama-3.1-8b-instant",
-    2: "llama-3.3-70b-versatile",
-    3: "groq/compound",
-    4: "groq/compound-mini",
-    5: "openai/gpt-oss-20b", # reasoning model. Probably overkill for this
-    6: "openai/gpt-oss-120b", # reasoning model
-    7: "qwen/qwen3.6-27b", # reasoning model
-}
-FALLBACK_MODEL_IDS = list(FREE_MODEL_IDS.values())
-FALLBACK_ERROR_TERMS = (
-    "context",
-    "token",
-    "too large",
-    "maximum",
-    "limit",
-)
 SYSTEM_MESSAGE = SYSTEM_PROMPT_PATH.read_text(encoding="utf-8").strip()
 CHUNK_INDEX_PATTERN = re.compile(r"<<\s*(?:chunk[-_\s]?index\s*[-=:]?\s*)?(\d+)\s*>>", re.IGNORECASE)
 
@@ -50,11 +39,6 @@ def load_knowledge() -> list[dict[str, Any]]:
         return [data]
 
     return []
-
-
-def get_knowledge() -> list[dict[str, Any]]:
-    return load_knowledge()
-
 
 def source_from_record(record: dict[str, Any], index: int) -> Source:
     source_ref = record.get("source_ref") if isinstance(record.get("source_ref"), dict) else {}
@@ -116,8 +100,8 @@ def create_answer(message: str, records: list[dict[str, Any]]) -> tuple[str, set
                         "content": f"Knowledge base context:\n{create_model_context(records)}\n\nQuestion:\n{message}",
                     },
                 ],
-                temperature=0.2,
-                max_tokens=600,
+                temperature=TEMPERATURE,
+                max_tokens=ANSWER_MAX_TOKENS,
             )
 
             return clean_answer_and_chunk_indexes(response.choices[0].message.content or "I do not know.")

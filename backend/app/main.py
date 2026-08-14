@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.models import ChatRequest, ChatResponse
-from app.rag_chat import create_answer, get_knowledge, source_from_record
+from app.rag_chat import create_answer, load_knowledge, source_from_record
 
 load_dotenv()
 
@@ -29,7 +29,7 @@ def health() -> dict[str, str]:
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest) -> ChatResponse:
-    records = get_knowledge()
+    records = load_knowledge()
 
     if not records:
         return ChatResponse(answer="I do not know.", sources=[])
