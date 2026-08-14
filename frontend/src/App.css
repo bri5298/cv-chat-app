@@ -11,7 +11,8 @@
 
 .workspace {
   width: min(1480px, 100%);
-  min-height: min(760px, calc(100vh - 64px));
+  height: min(760px, calc(100vh - 64px));
+  min-height: 0;
   display: grid;
   grid-template-columns: minmax(250px, 320px) minmax(0, 1fr);
   border: 1px solid var(--border);
@@ -19,6 +20,12 @@
   background: var(--surface);
   box-shadow: var(--shadow);
   overflow: hidden;
+}
+
+.workspace-with-document {
+  height: auto;
+  min-height: min(760px, calc(100vh - 64px));
+  grid-template-rows: minmax(0, min(760px, calc(100vh - 64px))) auto;
 }
 
 .profile-rail {
@@ -128,6 +135,7 @@
 .chat-panel {
   display: grid;
   grid-template-rows: auto 1fr auto auto;
+  min-height: 0;
   overflow: hidden;
   background: var(--surface);
 }
@@ -174,6 +182,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-height: 0;
   padding: 28px 32px;
   overflow-y: auto;
   background: var(--chat-bg);
@@ -438,10 +447,17 @@
   }
 
   .workspace {
-    min-height: 100vh;
+    height: 100vh;
     grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
     border: 0;
     border-radius: 0;
+  }
+
+  .workspace-with-document {
+    height: auto;
+    min-height: 100vh;
+    grid-template-rows: auto minmax(0, calc(100vh - 174px)) auto;
   }
 
   .profile-rail {
@@ -463,7 +479,7 @@
   }
 
   .chat-panel {
-    min-height: 100vh;
+    min-height: 0;
   }
 
   .chat-header {

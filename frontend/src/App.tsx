@@ -9,9 +9,9 @@ type ConversationMessage = ChatMessage & {
 };
 
 const suggestedQuestions = [
-  "What backend projects have I built?",
-  "Which technical skills are strongest?",
-  "Tell me about deployment experience",
+  "Has she worked on backend development?",
+  "What are the most recent examples of ML models she built?",
+  "Tell me about her production deployment experience",
 ];
 
 function App() {
@@ -70,26 +70,29 @@ function App() {
 
   return (
     <main className="app-shell">
-      <section className="workspace" aria-label="CV chat workspace">
+      <section
+        className={`workspace${selectedSource ? " workspace-with-document" : ""}`}
+        aria-label="CV chat workspace"
+      >
         <aside className="profile-rail">
           <div className="brand-lockup">
             <span className="brand-mark">CV</span>
             <div>
-              <p className="eyebrow">Personal RAG</p>
-              <h1>CV Intelligence</h1>
+              <p className="eyebrow">Chat with a Curriculum Vitae</p>
+              {/* <h1>CV Intelligence</h1> */}
             </div>
           </div>
 
           <p className="rail-copy">
-            Ask focused questions about experience, skills, projects, and impact
-            using the curated CV knowledge base.
+            Should you hire Brielle? Ask questions about her experience, skills, projects, and impact
+            using her CV as the knowledge base.
           </p>
 
           <a className="download-cv" href="/cv.pdf" download="Brielle Johnston CV.pdf">
-            Download CV
+            Download Brielle's CV
           </a>
 
-          <div className="rail-metrics" aria-label="Assistant qualities">
+          {/* <div className="rail-metrics" aria-label="Assistant qualities">
             <div>
               <span>Mode</span>
               <strong>Conversational</strong>
@@ -98,16 +101,16 @@ function App() {
               <span>Source</span>
               <strong>Knowledge-backed</strong>
             </div>
-          </div>
+          </div> */}
         </aside>
 
         <section className="chat-panel" aria-label="CV chat">
           <header className="chat-header">
             <div>
-              <p className="eyebrow">Ask the profile</p>
+              <p className="eyebrow">Ask about Brielle</p>
               <h2>What would you like to know?</h2>
             </div>
-            <div className="status-pill">Online</div>
+            <div className="status-pill">Built By Brielle Johnston</div>
           </header>
 
           <div className="message-list" aria-live="polite">
