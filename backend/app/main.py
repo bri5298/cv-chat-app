@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.models import ChatRequest, ChatResponse
-from app.rag_chat import create_answer, load_knowledge, source_from_record
+from backend.app.models import ChatRequest, ChatResponse
+from backend.app.rag_chat import create_answer, load_knowledge, source_from_record
 
 load_dotenv()
 

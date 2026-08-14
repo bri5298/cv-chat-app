@@ -8,8 +8,8 @@ import groq
 from fastapi import HTTPException
 from groq import Groq
 
-from app.models import Source
-from app.constants import (
+from backend.app.models import Source
+from backend.app.constants import (
     FALLBACK_MODEL_IDS,
     FALLBACK_ERROR_TERMS,
     TEMPERATURE,

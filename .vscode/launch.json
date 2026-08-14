@@ -7,13 +7,10 @@
       "request": "launch",
       "module": "uvicorn",
       "python": "${workspaceFolder}/.venv/Scripts/python.exe",
-      "cwd": "${workspaceFolder}/backend",
+      "cwd": "${workspaceFolder}",
       "envFile": "${workspaceFolder}/.env",
-      "env": {
-        "PYTHONPATH": "${workspaceFolder}/backend"
-      },
       "args": [
-        "app.main:app",
+        "backend.app.main:app",
         "--reload",
         "--host",
         "localhost",
