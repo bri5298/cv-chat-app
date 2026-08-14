@@ -200,14 +200,16 @@ function App() {
               <h2>Ask about Brielle's CV</h2>
             </div>
 
-            <button
-              className="clear-conversation"
-              disabled={!canClearConversation || isLoading}
-              onClick={handleClearConversation}
-              type="button"
-            >
-              Clear conversation
-            </button>
+            {canClearConversation ? (
+              <button
+                className="clear-conversation"
+                disabled={isLoading}
+                onClick={handleClearConversation}
+                type="button"
+              >
+                Clear conversation
+              </button>
+            ) : null}
           </header>
 
           <div className="message-list" aria-live="polite">

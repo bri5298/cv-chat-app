@@ -838,16 +838,16 @@
   }
 
   .chat-header {
-    padding-block: 16px;
+    padding-block: 10px;
   }
 
   .chat-header h2 {
-    font-size: 22px;
+    font-size: 17px;
   }
 
   .message-list {
     gap: 14px;
-    padding-block: 18px;
+    padding-block: 14px;
   }
 
   .empty-state {
@@ -905,7 +905,17 @@
   .composer {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 10px;
-    padding-block: 14px 16px;
+    padding-block: 10px 12px;
+  }
+
+  .composer input,
+  .composer button {
+    height: 46px;
+  }
+
+  .composer input {
+    padding-inline: 14px;
+    font-size: 14px;
   }
 
   .composer button {
