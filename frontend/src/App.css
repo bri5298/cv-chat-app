@@ -25,8 +25,8 @@
 .profile-rail {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 42px;
+  justify-content: flex-start;
+  gap: 28px;
   padding: 34px;
   color: #dffcff;
   background:
@@ -54,12 +54,15 @@
   font-weight: 850;
 }
 
-.brand-lockup h1 {
-  margin: 2px 0 0;
+.rail-title {
+  max-width: 220px;
+  margin: 0;
   color: #ffffff;
   font-family: var(--heading-font);
-  font-size: 28px;
-  line-height: 1;
+  font-size: 30px;
+  font-weight: 650;
+  line-height: 1.08;
+  letter-spacing: 0;
 }
 
 .rail-copy {
@@ -70,11 +73,72 @@
   line-height: 1.55;
 }
 
+.rail-faq {
+  display: grid;
+  max-width: 280px;
+  gap: 10px;
+}
+
+.rail-faq-label {
+  margin: 0 0 2px;
+  color: rgba(219, 234, 254, 0.6);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.rail-faq-item {
+  padding: 12px 13px;
+  border: 1px solid rgba(191, 219, 254, 0.18);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.rail-faq-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  color: rgba(236, 254, 255, 0.92);
+  background: transparent;
+  font-family: var(--heading-font);
+  font-size: 13px;
+  font-weight: 820;
+  line-height: 1.2;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rail-faq-trigger span:last-child {
+  color: rgba(224, 242, 254, 0.5);
+  font-family: var(--body-font);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.rail-faq-trigger:hover {
+  color: #ffffff;
+}
+
+.rail-faq-trigger:focus-visible {
+  outline: 3px solid rgba(236, 254, 255, 0.2);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
 .download-cv {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: fit-content;
+  margin-top: auto;
   min-height: 44px;
   padding: 10px 16px;
   border: 1px solid rgba(236, 254, 255, 0.32);
@@ -140,8 +204,8 @@
   justify-content: space-between;
   gap: 20px;
   padding: 28px 32px;
-  border-bottom: 1px solid var(--border);
-  background: rgba(248, 253, 255, 0.92);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+  background: linear-gradient(180deg, #f8fafc, #eef4f8);
 }
 
 .eyebrow {
@@ -165,10 +229,42 @@
 
 .chat-header h2 {
   margin: 0;
-  color: var(--text-strong);
+  color: #334155;
   font-family: var(--heading-font);
-  font-size: 26px;
-  line-height: 1.12;
+  font-size: 23px;
+  font-weight: 760;
+  line-height: 1.15;
+}
+
+.clear-conversation {
+  flex: 0 0 auto;
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 10px;
+  color: #475569;
+  background: rgba(255, 255, 255, 0.64);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 760;
+  cursor: pointer;
+}
+
+.clear-conversation:hover:not(:disabled) {
+  border-color: rgba(15, 23, 42, 0.22);
+  color: #0f172a;
+  background: #ffffff;
+}
+
+.clear-conversation:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.2);
+  outline-offset: 3px;
+}
+
+.clear-conversation:disabled {
+  color: #94a3b8;
+  cursor: not-allowed;
+  opacity: 0.56;
 }
 
 .status-pill {
@@ -440,6 +536,73 @@
   min-height: 0;
   border: 0;
   background: #ffffff;
+}
+
+.faq-modal {
+  width: min(520px, calc(100vw - 48px));
+  max-height: min(680px, calc(100vh - 48px));
+  overflow: hidden;
+  border: 1px solid rgba(216, 232, 248, 0.86);
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 34px 90px rgba(15, 35, 70, 0.3);
+}
+
+.faq-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+}
+
+.faq-modal-header .eyebrow {
+  margin: 0;
+}
+
+.faq-modal-header button {
+  flex: 0 0 auto;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 12px;
+  padding: 8px 10px;
+  color: #1e40af;
+  background: #eff6ff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.faq-modal-header button:hover {
+  border-color: rgba(37, 99, 235, 0.34);
+  background: #dbeafe;
+}
+
+.faq-modal-body {
+  max-height: min(520px, calc(100vh - 150px));
+  padding: 26px 28px 30px;
+  overflow-y: auto;
+}
+
+.faq-modal-body h2 {
+  margin: 0 0 18px;
+  color: var(--text-strong);
+  font-family: var(--heading-font);
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.faq-modal-body p {
+  margin: 0;
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.78;
+}
+
+.faq-modal-body p + p {
+  margin-top: 18px;
 }
 
 .error-message {

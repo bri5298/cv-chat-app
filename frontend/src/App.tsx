@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { FormEventHandler } from "react";
 import { sendChatMessage } from "./api";
+import { faqItems } from "./content/faq.ts";
 import type { ChatMessage, Source } from "./types";
 import "./App.css";
 
@@ -62,10 +63,13 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [expandedSourceKey, setExpandedSourceKey] = useState<string | null>(null);
+  const [selectedFaqIndex, setSelectedFaqIndex] = useState<number | null>(null);
   const [modalSource, setModalSource] = useState<Source | null>(null);
 
+  const selectedFaqItem = selectedFaqIndex === null ? null : faqItems[selectedFaqIndex];
+
   useEffect(() => {
-    if (!modalSource) {
+    if (!modalSource && !selectedFaqItem) {
       return;
     }
 
@@ -74,6 +78,7 @@ function App() {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setModalSource(null);
+        setSelectedFaqIndex(null);
       }
     };
 
@@ -84,7 +89,7 @@ function App() {
       document.body.style.overflow = originalBodyOverflow;
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [modalSource]);
+  }, [modalSource, selectedFaqItem]);
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault();
@@ -130,20 +135,49 @@ function App() {
     }
   };
 
+  const handleClearConversation = () => {
+    setMessages([]);
+    setInput("");
+    setError("");
+    setExpandedSourceKey(null);
+    setModalSource(null);
+  };
+
+  const canClearConversation = messages.length > 0 || input.trim().length > 0 || Boolean(error);
+
   return (
     <main className="app-shell">
       <section className="workspace" aria-label="CV chat workspace">
         <aside className="profile-rail">
           <div className="brand-lockup">
             <div>
-              <p className="eyebrow">Brielle's CV Assistant</p>
+              <h1 className="rail-title">Brielle's CV Assistant</h1>
             </div>
           </div>
 
           <p className="rail-copy">
-            Should you hire Brielle? Ask questions about her experience, skills, projects, and impact
-            using her CV as the knowledge base.
+            Is Brielle a good fit for your team? Ask about her experience, skills,
+            projects, and accomplishments. Answers are drawn directly from her CV.
           </p>
+
+          <section className="rail-faq" aria-label="CV assistant FAQ">
+            <p className="rail-faq-label">FAQ</p>
+            {faqItems.map((item, index) => {
+              return (
+                <div className="rail-faq-item" key={item.question}>
+                  <button
+                    aria-haspopup="dialog"
+                    className="rail-faq-trigger"
+                    onClick={() => setSelectedFaqIndex(index)}
+                    type="button"
+                  >
+                    <span>{item.question}</span>
+                    <span aria-hidden="true">›</span>
+                  </button>
+                </div>
+              );
+            })}
+          </section>
 
           <a className="download-cv" href="/cv.pdf" download="Brielle Johnston CV.pdf">
             Download her CV
@@ -155,6 +189,15 @@ function App() {
             <div>
               <h2>Ask about Brielle's CV</h2>
             </div>
+
+            <button
+              className="clear-conversation"
+              disabled={!canClearConversation || isLoading}
+              onClick={handleClearConversation}
+              type="button"
+            >
+              Clear conversation
+            </button>
           </header>
 
           <div className="message-list" aria-live="polite">
@@ -269,6 +312,37 @@ function App() {
         </section>
 
       </section>
+
+      {selectedFaqItem ? (
+        <div
+          className="cv-modal-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setSelectedFaqIndex(null);
+            }
+          }}
+        >
+          <section
+            aria-labelledby="faq-modal-title"
+            aria-modal="true"
+            className="faq-modal"
+            role="dialog"
+          >
+            <header className="faq-modal-header">
+              <p className="eyebrow">FAQ</p>
+              <button type="button" onClick={() => setSelectedFaqIndex(null)}>
+                Close
+              </button>
+            </header>
+            <div className="faq-modal-body">
+              <h2 id="faq-modal-title">{selectedFaqItem.question}</h2>
+              {selectedFaqItem.answer.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
+          </section>
+        </div>
+      ) : null}
 
       {modalSource ? (
         <div
