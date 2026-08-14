@@ -197,7 +197,7 @@ function App() {
         <section className="chat-panel" aria-label="CV chat">
           <header className="chat-header">
             <div>
-              <h2>Ask about Brielle's CV</h2>
+              <h2>Ask about Brielle's Resume</h2>
             </div>
 
             {canClearConversation ? (
