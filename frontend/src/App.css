@@ -638,6 +638,7 @@
 .composer {
   display: grid;
   grid-template-columns: 1fr auto;
+  align-items: end;
   gap: 12px;
   padding: 22px 32px 24px;
   border-top: 1px solid var(--border);
@@ -645,28 +646,37 @@
 }
 
 .input-wrap {
+  display: flex;
+  align-items: flex-end;
   min-width: 0;
 }
 
-.composer input {
+.composer textarea {
   width: 100%;
   min-width: 0;
+  min-height: 52px;
+  max-height: 132px;
   height: 52px;
   box-sizing: border-box;
   border: 1px solid var(--border-strong);
   border-radius: 14px;
-  padding: 0 18px;
+  padding: 14px 18px;
   color: var(--text);
   background: #f8fdff;
   font: inherit;
+  line-height: 1.45;
+  resize: none;
+  overflow-y: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 
-.composer input:focus {
+.composer textarea:focus {
   border-color: var(--accent);
   outline: 3px solid var(--focus-ring);
 }
 
-.composer input:disabled {
+.composer textarea:disabled {
   cursor: not-allowed;
   background: var(--disabled-bg);
 }
@@ -928,23 +938,24 @@
 
   .composer {
     grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
     gap: 8px;
     padding-block: 9px calc(10px + env(safe-area-inset-bottom));
   }
 
-  .composer input,
   .composer button {
     height: 48px;
   }
 
-  .composer input {
+  .composer textarea {
+    min-height: 48px;
+    max-height: 116px;
     padding-inline: 14px;
+    padding-block: 13px;
     font-size: 16px;
-    line-height: 1.2;
+    line-height: 1.35;
   }
 
-  .composer input::placeholder {
+  .composer textarea::placeholder {
     font-size: 14px;
   }
 

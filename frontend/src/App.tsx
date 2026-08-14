@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEventHandler } from "react";
 import { sendChatMessage } from "./api";
 import { faqItems } from "./content/faq.ts";
@@ -66,8 +66,26 @@ function App() {
   const [expandedSourceKey, setExpandedSourceKey] = useState<string | null>(null);
   const [selectedFaqIndex, setSelectedFaqIndex] = useState<number | null>(null);
   const [modalSource, setModalSource] = useState<Source | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const selectedFaqItem = selectedFaqIndex === null ? null : faqItems[selectedFaqIndex];
+
+  useEffect(() => {
+    const inputElement = inputRef.current;
+
+    if (!inputElement) {
+      return;
+    }
+
+    inputElement.style.height = "auto";
+    const maxHeight = Number.parseFloat(getComputedStyle(inputElement).maxHeight);
+    const nextHeight = Number.isFinite(maxHeight)
+      ? Math.min(inputElement.scrollHeight, maxHeight)
+      : inputElement.scrollHeight;
+
+    inputElement.style.height = `${nextHeight}px`;
+    inputElement.style.overflowY = inputElement.scrollHeight > nextHeight ? "auto" : "hidden";
+  }, [input]);
 
   useEffect(() => {
     if (!modalSource && !selectedFaqItem) {
@@ -308,13 +326,20 @@ function App() {
               <label className="sr-only" htmlFor="chat-message">
                 Ask a question
               </label>
-              <input
+              <textarea
                 id="chat-message"
-                type="text"
+                ref={inputRef}
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+                    event.preventDefault();
+                    event.currentTarget.form?.requestSubmit();
+                  }
+                }}
                 placeholder="Ask about skills, projects, or experience"
                 disabled={isLoading}
+                rows={1}
               />
             </div>
             <button type="submit" disabled={isLoading || !input.trim()}>
