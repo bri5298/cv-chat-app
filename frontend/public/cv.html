@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Brielle Johnston CV</title>
     <style>
         :root {
@@ -15,6 +15,7 @@
         body {
             margin: 0;
             padding: 40px 18px;
+            overscroll-behavior-y: contain;
         }
 
         main {
@@ -104,12 +105,14 @@
 
         @media (max-width: 640px) {
             body {
-                padding: 0;
+                padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
                 background: #fff;
             }
 
             main {
                 min-height: 100vh;
+                min-height: 100svh;
+                min-height: 100dvh;
                 border: 0;
                 box-shadow: none;
             }

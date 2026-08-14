@@ -42,13 +42,16 @@
 
 html {
   min-width: 320px;
+  min-height: 100%;
   background: var(--app-bg);
 }
 
 body {
   min-width: 320px;
   min-height: 100vh;
+  min-height: 100svh;
   margin: 0;
+  overscroll-behavior-y: none;
 }
 
 button,
@@ -62,4 +65,5 @@ button {
 
 #root {
   min-height: 100vh;
+  min-height: 100svh;
 }

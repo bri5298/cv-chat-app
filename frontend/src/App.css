@@ -305,6 +305,8 @@
   min-height: 0;
   padding: 28px 32px;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   background: var(--chat-bg);
 }
 
@@ -716,12 +718,16 @@
 
 @media (max-width: 720px) {
   .app-shell {
+    min-height: 100vh;
+    min-height: 100svh;
     min-height: 100dvh;
     padding: 0;
+    overflow: hidden;
   }
 
   .workspace {
     height: 100vh;
+    height: 100svh;
     height: 100dvh;
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr);
@@ -734,8 +740,8 @@
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     justify-content: stretch;
-    gap: 12px 14px;
-    padding: 14px 16px;
+    gap: 8px 12px;
+    padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
   }
 
   .brand-lockup {
@@ -766,7 +772,7 @@
     grid-row: 2;
     grid-template-columns: 1fr 1fr;
     max-width: none;
-    gap: 8px;
+    gap: 6px;
   }
 
   .rail-faq-label {
@@ -777,12 +783,13 @@
 
   .rail-faq-item {
     min-width: 0;
-    padding: 10px 12px;
-    border-radius: 12px;
+    padding: 8px 10px;
+    border-radius: 10px;
   }
 
   .rail-faq-trigger {
-    font-size: 12px;
+    font-size: 11px;
+    line-height: 1.15;
   }
 
   .rail-faq-trigger span:last-child {
@@ -793,10 +800,10 @@
     grid-column: 2;
     grid-row: 1;
     justify-self: end;
-    min-height: 38px;
-    padding: 8px 12px;
-    border-radius: 12px;
-    font-size: 13px;
+    min-height: 36px;
+    padding: 7px 10px;
+    border-radius: 10px;
+    font-size: 12px;
     white-space: nowrap;
   }
 
@@ -814,7 +821,7 @@
 
   .brand-lockup h1 {
     max-width: none;
-    font-size: 22px;
+    font-size: 20px;
   }
 
   .chat-panel {
@@ -834,20 +841,29 @@
   .chat-header,
   .message-list,
   .composer {
-    padding-inline: 18px;
+    padding-inline: 14px;
   }
 
   .chat-header {
-    padding-block: 10px;
+    min-height: 46px;
+    padding-block: 8px;
   }
 
   .chat-header h2 {
-    font-size: 17px;
+    font-size: 18px;
+  }
+
+  .clear-conversation {
+    min-height: 32px;
+    padding: 5px 8px;
+    font-size: 11px;
+    border-radius: 9px;
   }
 
   .message-list {
-    gap: 14px;
-    padding-block: 14px;
+    gap: 12px;
+    padding-block: 12px;
+    scroll-padding-bottom: 92px;
   }
 
   .empty-state {
@@ -878,7 +894,13 @@
   }
 
   .message {
-    max-width: 92%;
+    max-width: 94%;
+    padding: 13px 14px 14px;
+    border-radius: 16px;
+  }
+
+  .message p {
+    line-height: 1.5;
   }
 
   .citation-card-header,
@@ -893,33 +915,132 @@
   }
 
   .cv-modal-backdrop {
-    padding: 12px;
+    padding: calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));
   }
 
   .cv-modal {
     width: calc(100vw - 24px);
     height: calc(100vh - 24px);
+    height: calc(100svh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     border-radius: 18px;
   }
 
   .composer {
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 10px;
-    padding-block: 10px 12px;
+    align-items: center;
+    gap: 8px;
+    padding-block: 9px calc(10px + env(safe-area-inset-bottom));
   }
 
   .composer input,
   .composer button {
-    height: 46px;
+    height: 48px;
   }
 
   .composer input {
     padding-inline: 14px;
+    font-size: 16px;
+    line-height: 1.2;
+  }
+
+  .composer input::placeholder {
     font-size: 14px;
   }
 
   .composer button {
-    min-width: 64px;
-    padding-inline: 16px;
+    min-width: 68px;
+    padding-inline: 14px;
+    border-radius: 13px;
+  }
+}
+
+@media (max-width: 430px) {
+  .profile-rail {
+    padding-inline: 12px;
+  }
+
+  .rail-faq {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 6px;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+
+  .rail-faq-label {
+    display: none;
+  }
+
+  .rail-faq-item {
+    min-width: 0;
+  }
+
+  .rail-faq-trigger span:first-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .brand-lockup h1 {
+    font-size: 19px;
+  }
+
+  .chat-header,
+  .message-list,
+  .composer {
+    padding-inline: 12px;
+  }
+
+  .chat-header h2 {
+    font-size: 17px;
+  }
+
+  .clear-conversation {
+    max-width: 92px;
+    white-space: normal;
+    line-height: 1.05;
+  }
+
+  .empty-state {
+    padding: 14px;
+  }
+
+  .suggestions button {
+    width: 100%;
+    text-align: left;
+  }
+
+  .composer {
+    grid-template-columns: minmax(0, 1fr) 56px;
+  }
+
+  .composer button {
+    min-width: 56px;
+    padding-inline: 0;
+  }
+}
+
+@media (max-width: 360px) {
+  .download-cv {
+    min-width: 36px;
+    padding-inline: 8px;
+  }
+
+  .download-cv-mobile {
+    gap: 4px;
+  }
+
+  .brand-lockup h1 {
+    font-size: 18px;
+  }
+
+  .composer {
+    grid-template-columns: 1fr;
+  }
+
+  .composer button {
+    width: 100%;
   }
 }
