@@ -27,7 +27,7 @@
   flex-direction: column;
   justify-content: flex-start;
   gap: 28px;
-  padding: 34px;
+  padding: 84px 34px 34px;
   color: #dffcff;
   background:
     linear-gradient(160deg, rgba(11, 31, 66, 0.96), rgba(12, 74, 110, 0.98)),
@@ -69,7 +69,7 @@
   max-width: 280px;
   margin: 0;
   color: rgba(224, 242, 254, 0.82);
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.55;
 }
 
@@ -152,6 +152,26 @@
 
 .download-cv:hover {
   background: #ffffff;
+}
+
+.download-cv-full {
+  display: inline;
+}
+
+.download-cv-mobile {
+  display: none;
+  align-items: center;
+  gap: 6px;
+}
+
+.download-cv svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.4;
 }
 
 .download-cv:focus-visible {
@@ -714,11 +734,13 @@
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     justify-content: stretch;
-    gap: 14px;
+    gap: 12px 14px;
     padding: 14px 16px;
   }
 
   .brand-lockup {
+    grid-column: 1;
+    grid-row: 1;
     min-width: 0;
     gap: 12px;
   }
@@ -739,7 +761,38 @@
     display: none;
   }
 
+  .rail-faq {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    grid-template-columns: 1fr 1fr;
+    max-width: none;
+    gap: 8px;
+  }
+
+  .rail-faq-label {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+    font-size: 10px;
+  }
+
+  .rail-faq-item {
+    min-width: 0;
+    padding: 10px 12px;
+    border-radius: 12px;
+  }
+
+  .rail-faq-trigger {
+    font-size: 12px;
+  }
+
+  .rail-faq-trigger span:last-child {
+    font-size: 18px;
+  }
+
   .download-cv {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
     min-height: 38px;
     padding: 8px 12px;
     border-radius: 12px;
@@ -747,12 +800,21 @@
     white-space: nowrap;
   }
 
+  .download-cv-full {
+    display: none;
+  }
+
+  .download-cv-mobile {
+    display: inline-flex;
+  }
+
   .rail-metrics {
     grid-template-columns: 1fr 1fr;
   }
 
   .brand-lockup h1 {
-    font-size: 24px;
+    max-width: none;
+    font-size: 22px;
   }
 
   .chat-panel {
@@ -790,25 +852,29 @@
 
   .empty-state {
     max-width: none;
-    padding: 20px;
-    border-radius: 18px;
+    margin: 0;
+    padding: 16px;
+    border-radius: 16px;
   }
 
   .empty-state span {
-    font-size: 20px;
+    margin-bottom: 4px;
+    font-size: 18px;
   }
 
   .empty-state p {
-    margin-bottom: 16px;
+    margin-bottom: 12px;
+    font-size: 14px;
   }
 
   .suggestions {
+    justify-content: center;
     gap: 8px;
   }
 
   .suggestions button {
-    padding: 8px 10px;
-    font-size: 13px;
+    padding: 7px 9px;
+    font-size: 12px;
   }
 
   .message {

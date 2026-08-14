@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { FormEventHandler } from "react";
 import { sendChatMessage } from "./api";
 import { faqItems } from "./content/faq.ts";
+import { DownloadIcon } from "./icons/DownloadIcon";
 import type { ChatMessage, Source } from "./types";
 import "./App.css";
 
@@ -156,8 +157,8 @@ function App() {
           </div>
 
           <p className="rail-copy">
-            Is Brielle a good fit for your team? Ask about her experience, skills,
-            projects, and accomplishments. Answers are drawn directly from her CV.
+            Is Brielle a good fit for your team? <br />
+            Ask about her experience, skills, projects, and accomplishments. Answers are drawn directly from her CV.
           </p>
 
           <section className="rail-faq" aria-label="CV assistant FAQ">
@@ -179,8 +180,17 @@ function App() {
             })}
           </section>
 
-          <a className="download-cv" href="/cv.pdf" download="Brielle Johnston CV.pdf">
-            Download her CV
+          <a
+            aria-label="Download Brielle Johnston CV"
+            className="download-cv"
+            href="/cv.pdf"
+            download="Brielle Johnston CV.pdf"
+          >
+            <span className="download-cv-full">Download her CV</span>
+            <span className="download-cv-mobile" aria-hidden="true">
+              CV
+              <DownloadIcon />
+            </span>
           </a>
         </aside>
 
