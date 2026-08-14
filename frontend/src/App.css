@@ -22,12 +22,6 @@
   overflow: hidden;
 }
 
-.workspace-with-document {
-  height: auto;
-  min-height: min(760px, calc(100vh - 64px));
-  grid-template-rows: minmax(0, min(760px, calc(100vh - 64px))) auto;
-}
-
 .profile-rail {
   display: flex;
   flex-direction: column;
@@ -298,35 +292,36 @@
   background: #dbeafe;
 }
 
-.document-panel {
-  display: grid;
-  grid-column: 1 / -1;
-  grid-template-rows: auto 1fr;
-  min-width: 0;
-  min-height: 560px;
-  border-top: 1px solid var(--border);
+.citation-card {
+  width: min(620px, 100%);
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  border-radius: 16px;
   background: #f8fdff;
+  box-shadow: 0 12px 28px rgba(15, 82, 103, 0.08);
 }
 
-.document-header {
+.citation-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 24px;
+  gap: 12px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--border);
   background: #ffffff;
 }
 
-.document-header h2 {
+.citation-card h3 {
   margin: 0;
   color: var(--text-strong);
   font-family: var(--heading-font);
-  font-size: 18px;
+  font-size: 15px;
   line-height: 1.2;
 }
 
-.document-header button {
+.citation-card-action,
+.cv-modal-header button {
   flex: 0 0 auto;
   border: 1px solid rgba(37, 99, 235, 0.18);
   border-radius: 12px;
@@ -339,7 +334,97 @@
   cursor: pointer;
 }
 
-.document-panel iframe {
+.citation-card-action:hover,
+.cv-modal-header button:hover {
+  border-color: rgba(37, 99, 235, 0.34);
+  background: #dbeafe;
+}
+
+.citation-card-body {
+  max-height: 260px;
+  padding: 16px;
+  overflow-y: auto;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.citation-card-body p {
+  margin: 0;
+}
+
+.citation-meta {
+  display: grid;
+  gap: 3px;
+  margin-bottom: 12px;
+  color: var(--text-strong);
+  font-weight: 800;
+}
+
+.citation-meta p + p {
+  color: var(--accent-strong);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.citation-detail {
+  color: var(--text);
+}
+
+.citation-card-body ul {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.citation-card-body li {
+  padding-left: 3px;
+}
+
+.cv-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(15, 35, 70, 0.46);
+  backdrop-filter: blur(10px);
+}
+
+.cv-modal {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(980px, calc(100vw - 48px));
+  height: min(760px, calc(100vh - 48px));
+  overflow: hidden;
+  border: 1px solid rgba(216, 232, 248, 0.86);
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 34px 90px rgba(15, 35, 70, 0.3);
+}
+
+.cv-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--border);
+  background: #ffffff;
+}
+
+.cv-modal-header h2 {
+  margin: 0;
+  color: var(--text-strong);
+  font-family: var(--heading-font);
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.cv-modal iframe {
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -434,11 +519,6 @@
   .workspace {
     grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
   }
-
-  .document-panel {
-    min-height: 540px;
-    border-left: 0;
-  }
 }
 
 @media (max-width: 720px) {
@@ -452,12 +532,6 @@
     grid-template-rows: auto minmax(0, 1fr);
     border: 0;
     border-radius: 0;
-  }
-
-  .workspace-with-document {
-    height: auto;
-    min-height: 100vh;
-    grid-template-rows: auto minmax(0, calc(100vh - 174px)) auto;
   }
 
   .profile-rail {
@@ -506,6 +580,27 @@
 
   .message {
     max-width: 92%;
+  }
+
+  .citation-card-header,
+  .cv-modal-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .citation-card-action,
+  .cv-modal-header button {
+    width: 100%;
+  }
+
+  .cv-modal-backdrop {
+    padding: 12px;
+  }
+
+  .cv-modal {
+    width: calc(100vw - 24px);
+    height: calc(100vh - 24px);
+    border-radius: 18px;
   }
 
   .composer {

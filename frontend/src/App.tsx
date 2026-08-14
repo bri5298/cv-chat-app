@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEventHandler } from "react";
 import { sendChatMessage } from "./api";
 import type { ChatMessage, Source } from "./types";
@@ -14,16 +14,77 @@ const suggestedQuestions = [
   "Tell me about her production deployment experience",
 ];
 
+function getSourceUrl(source: Source) {
+  return `${source.document_url ?? "/cv.html"}#${source.anchor ?? `chunk-${source.chunk_index}`}`;
+}
+
+function renderCitationContent(source: Source) {
+  const lines = (source.content ?? "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length === 0) {
+    return <p>No citation text is available for this source.</p>;
+  }
+
+  if (lines.length === 1) {
+    return <p>{lines[0]}</p>;
+  }
+
+  const metaLines = lines.length > 2 ? lines.slice(0, 2) : lines.slice(0, 1);
+  const detailLines = lines.slice(metaLines.length);
+
+  return (
+    <>
+      <div className="citation-meta">
+        {metaLines.map((line) => (
+          <p key={line}>{line}</p>
+        ))}
+      </div>
+
+      {detailLines.length === 1 ? (
+        <p className="citation-detail">{detailLines[0]}</p>
+      ) : (
+        <ul>
+          {detailLines.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      )}
+    </>
+  );
+}
+
 function App() {
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [selectedSource, setSelectedSource] = useState<Source | null>(null);
+  const [expandedSourceKey, setExpandedSourceKey] = useState<string | null>(null);
+  const [modalSource, setModalSource] = useState<Source | null>(null);
 
-  const selectedSourceUrl = selectedSource
-    ? `${selectedSource.document_url ?? "/cv.html"}#${selectedSource.anchor ?? `chunk-${selectedSource.chunk_index}`}`
-    : "";
+  useEffect(() => {
+    if (!modalSource) {
+      return;
+    }
+
+    const originalBodyOverflow = document.body.style.overflow;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setModalSource(null);
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [modalSource]);
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault();
@@ -44,7 +105,8 @@ function App() {
     setMessages(nextMessages);
     setInput("");
     setError("");
-    setSelectedSource(null);
+    setExpandedSourceKey(null);
+    setModalSource(null);
     setIsLoading(true);
 
     try {
@@ -70,10 +132,7 @@ function App() {
 
   return (
     <main className="app-shell">
-      <section
-        className={`workspace${selectedSource ? " workspace-with-document" : ""}`}
-        aria-label="CV chat workspace"
-      >
+      <section className="workspace" aria-label="CV chat workspace">
         <aside className="profile-rail">
           <div className="brand-lockup">
             <span className="brand-mark">CV</span>
@@ -131,32 +190,67 @@ function App() {
                 </div>
               </div>
             ) : (
-              messages.map((message, index) => (
-                <article
-                  className={`message message-${message.role}`}
-                  key={`${message.role}-${index}`}
-                >
-                  <div className="message-label">
-                    {message.role === "user" ? "You" : "Assistant"}
-                  </div>
-                  <p>{message.content}</p>
+              messages.map((message, index) => {
+                const expandedSource = message.sources?.find(
+                  (source) => expandedSourceKey === `${index}-${source.id}`,
+                );
 
-                  {message.sources && message.sources.length > 0 ? (
-                    <div className="sources" aria-label="Sources">
-                      {message.sources.map((source) => (
-                        <button
-                          className="source"
-                          key={source.id}
-                          onClick={() => setSelectedSource(source)}
-                          type="button"
-                        >
-                          {source.title}
-                        </button>
-                      ))}
+                return (
+                  <article
+                    className={`message message-${message.role}`}
+                    key={`${message.role}-${index}`}
+                  >
+                    <div className="message-label">
+                      {message.role === "user" ? "You" : "Assistant"}
                     </div>
-                  ) : null}
-                </article>
-              ))
+                    <p>{message.content}</p>
+
+                    {message.sources && message.sources.length > 0 ? (
+                      <>
+                        <div className="sources" aria-label="Sources">
+                          {message.sources.map((source) => {
+                            const sourceKey = `${index}-${source.id}`;
+
+                            return (
+                              <button
+                                aria-expanded={expandedSourceKey === sourceKey}
+                                className="source"
+                                key={source.id}
+                                onClick={() =>
+                                  setExpandedSourceKey(
+                                    expandedSourceKey === sourceKey ? null : sourceKey,
+                                  )
+                                }
+                                type="button"
+                              >
+                                {source.title}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {expandedSource ? (
+                          <div className="citation-card">
+                            <div className="citation-card-header">
+                              <h3>{expandedSource.title}</h3>
+                              <button
+                                className="citation-card-action"
+                                onClick={() => setModalSource(expandedSource)}
+                                type="button"
+                              >
+                                View it in CV
+                              </button>
+                            </div>
+                            <div className="citation-card-body">
+                              {renderCitationContent(expandedSource)}
+                            </div>
+                          </div>
+                        ) : null}
+                      </>
+                    ) : null}
+                  </article>
+                );
+              })
             )}
 
             {isLoading ? (
@@ -189,25 +283,40 @@ function App() {
           </form>
         </section>
 
-        {selectedSource ? (
-          <aside className="document-panel" aria-label="CV source document">
-            <header className="document-header">
+      </section>
+
+      {modalSource ? (
+        <div
+          className="cv-modal-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setModalSource(null);
+            }
+          }}
+        >
+          <section
+            aria-label={`${modalSource.title} in CV`}
+            aria-modal="true"
+            className="cv-modal"
+            role="dialog"
+          >
+            <header className="cv-modal-header">
               <div>
-                <p className="eyebrow">Source document</p>
-                <h2>{selectedSource.title}</h2>
+                <p className="eyebrow">Source in CV</p>
+                <h2>{modalSource.title}</h2>
               </div>
-              <button type="button" onClick={() => setSelectedSource(null)}>
+              <button type="button" onClick={() => setModalSource(null)}>
                 Close
               </button>
             </header>
             <iframe
-              key={selectedSourceUrl}
-              src={selectedSourceUrl}
+              key={getSourceUrl(modalSource)}
+              src={getSourceUrl(modalSource)}
               title="CV source document"
             />
-          </aside>
-        ) : null}
-      </section>
+          </section>
+        </div>
+      ) : null}
     </main>
   );
 }

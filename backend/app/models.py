@@ -14,6 +14,7 @@ class ChatRequest(BaseModel):
 class Source(BaseModel):
     id: str
     title: str
+    content: str | None = None
     chunk_index: int | None = None
     document_url: str | None = None
     anchor: str | None = None

@@ -61,6 +61,7 @@ def source_from_record(record: dict[str, Any], index: int) -> Source:
     return Source(
         id=str(record.get("id") or record.get("slug") or f"source-{index + 1}"),
         title=str(record.get("title") or record.get("name") or f"Source {index + 1}"),
+        content=str(record.get("content") or ""),
         chunk_index=record.get("chunk_index") if isinstance(record.get("chunk_index"), int) else None,
         document_url=source_ref.get("document_url"),
         anchor=source_ref.get("anchor"),
