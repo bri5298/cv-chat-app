@@ -155,7 +155,6 @@ function App() {
             <div>
               <h2>Ask about Brielle's CV</h2>
             </div>
-            <div className="status-pill">Built By Brielle Johnston</div>
           </header>
 
           <div className="message-list" aria-live="polite">
