@@ -1,6 +1,6 @@
 import type { ChatRequest, ChatResponse } from "./types";
 
-const API_BASE_URL = import.meta.env.PROD ? "/api" : "http://localhost:8000";
+const API_BASE_URL = "/api";
 
 export async function sendChatMessage(
   request: ChatRequest,
