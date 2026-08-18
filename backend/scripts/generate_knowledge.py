@@ -66,8 +66,8 @@ def make_record(
     }
 
 def build_html_document(records: list[dict[str, Any]]) -> str:
-        sections = "\n".join(build_html_section(record) for record in records)
-        return f"""<!doctype html>
+    sections = "\n".join(build_html_sections(records))
+    return f"""<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -106,6 +106,17 @@ def build_html_document(records: list[dict[str, Any]]) -> str:
         }}
 
         section:target {{
+            background: #f3e70b;
+            box-shadow: 0 0 0 8px #f3e70b;
+        }}
+
+        .experience-bullet {{
+            scroll-margin-top: 24px;
+            border-radius: 6px;
+            transition: background-color 160ms ease, box-shadow 160ms ease;
+        }}
+
+        .experience-bullet:target {{
             background: #f3e70b;
             box-shadow: 0 0 0 8px #f3e70b;
         }}
@@ -192,6 +203,34 @@ def build_html_document(records: list[dict[str, Any]]) -> str:
 </body>
 </html>
 """
+
+
+def build_html_sections(records: list[dict[str, Any]]) -> list[str]:
+    sections: list[str] = []
+    index = 0
+
+    while index < len(records):
+        record = records[index]
+        if record.get("category") != "work experience":
+            sections.append(build_html_section(record))
+            index += 1
+            continue
+
+        group = [record]
+        group_key = work_experience_group_key(record)
+        index += 1
+
+        while (
+            index < len(records)
+            and records[index].get("category") == "work experience"
+            and work_experience_group_key(records[index]) == group_key
+        ):
+            group.append(records[index])
+            index += 1
+
+        sections.append(build_work_experience_section(group))
+
+    return sections
 
 
 def convert_to_pdf(input_path: Path, output_path: Path) -> None:
@@ -283,6 +322,45 @@ def build_html_section(record: dict[str, Any]) -> str:
 
     return f"""    <section id="{anchor}" class="{class_name}" data-chunk-index="{chunk_index}" data-category="{category}">
       {body}
+    </section>"""
+
+
+def work_experience_group_key(record: dict[str, Any]) -> tuple[str, str, str]:
+    lines = visible_content_lines(str(record.get("content") or ""))
+    employer = lines[0] if len(lines) > 0 else ""
+    role = lines[1] if len(lines) > 1 else ""
+    return str(record.get("title") or ""), employer, role
+
+
+def build_work_experience_section(records: list[dict[str, Any]]) -> str:
+    first_record = records[0]
+    first_lines = visible_content_lines(str(first_record.get("content") or ""))
+    if len(first_lines) < 3:
+        return build_html_section(first_record)
+
+    chunk_index = first_record.get("chunk_index")
+    category = html.escape(str(first_record.get("category") or ""), quote=True)
+    title = html.escape(str(first_record.get("title") or ""))
+    employer, date = split_tabbed_line(first_lines[0])
+    role = first_lines[1]
+    bullets: list[str] = []
+
+    for record in records:
+        lines = visible_content_lines(str(record.get("content") or ""))
+        if len(lines) < 3:
+            continue
+        bullet = "\n".join(lines[2:])
+        bullet_anchor = f"chunk-{record.get('chunk_index')}"
+        bullets.append(f"        <li id=\"{bullet_anchor}\" class=\"experience-bullet\">{html.escape(bullet)}</li>")
+
+    bullet_items = "\n".join(bullets)
+    return f"""    <section class="work-experience" data-chunk-index="{chunk_index}" data-category="{category}">
+      <h2>{title}</h2>
+      <div class="entry-heading"><span>{html.escape(employer)}</span><span>{html.escape(date)}</span></div>
+      <p class="entry-role">{html.escape(role)}</p>
+      <ul>
+{bullet_items}
+      </ul>
     </section>"""
 
 
@@ -421,18 +499,26 @@ def build_work_experience_records(paragraphs: list[str], chunk_index: int) -> tu
 
         role = paragraphs[index + 1]
         index += 2
-        content_lines = [employer, role]
+        bullet_lines: list[str] = []
 
         while index < len(paragraphs) and not is_employer_line(paragraphs[index]):
-            content_lines.append(paragraphs[index])
+            bullet_lines.append(paragraphs[index])
             index += 1
 
         employer_name = normalize_employer_name(employer)
-        record_id = f"cv-work-experience-{slugify(employer_name)}"
         title = f"Work Experience - {employer_name}"
-        content = "\n".join(content_lines)
-        records.append(make_record(record_id, title, "work experience", "WORK EXPERIENCE", chunk_index, content))
-        chunk_index += 1
+        if not bullet_lines:
+            record_id = f"cv-work-experience-{slugify(employer_name)}"
+            content = "\n".join([employer, role])
+            records.append(make_record(record_id, title, "work experience", "WORK EXPERIENCE", chunk_index, content))
+            chunk_index += 1
+            continue
+
+        for bullet_number, bullet in enumerate(bullet_lines, start=1):
+            record_id = f"cv-work-experience-{slugify(employer_name)}-{bullet_number}"
+            content = "\n".join([employer, role, bullet])
+            records.append(make_record(record_id, title, "work experience", "WORK EXPERIENCE", chunk_index, content))
+            chunk_index += 1
 
     return records, chunk_index
 

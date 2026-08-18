@@ -180,6 +180,8 @@ def create_answer(message: str, records: list[dict[str, Any]]) -> tuple[str, set
             )
         except groq.RateLimitError as error:
             last_error = error
+        except groq.NotFoundError as error:
+            last_error = error
         except groq.BadRequestError as error:
             if not should_try_next_model(error):
                 raise HTTPException(

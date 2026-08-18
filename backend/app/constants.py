@@ -1,13 +1,13 @@
-DEFAULT_MODEL = "llama-3.1-8b-instant"
+DEFAULT_MODEL = "groq/compound-mini"
 FREE_MODEL_IDS = {
-    1: "llama-3.1-8b-instant",
-    2: "llama-3.3-70b-versatile",
-    3: "groq/compound",
-    4: "groq/compound-mini",
-    5: "openai/gpt-oss-20b", # reasoning model. Probably overkill for this
-    6: "openai/gpt-oss-120b", # reasoning model
-    7: "qwen/qwen3.6-27b", # reasoning model
+    1: "groq/compound-mini",
+    2: "groq/compound",
+    3: "openai/gpt-oss-20b", # reasoning model, probably enough for this
+    4: "qwen/qwen3.6-27b", # reasoning model, overkill for most CV questions
+    5: "openai/gpt-oss-120b", # reasoning model, heaviest fallback, overkill
 }
+
+
 FALLBACK_MODEL_IDS = list(FREE_MODEL_IDS.values())
 FALLBACK_ERROR_TERMS = (
     "context",

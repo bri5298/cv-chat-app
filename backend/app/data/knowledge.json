@@ -132,39 +132,183 @@
     }
   },
   {
-    "id": "cv-work-experience-bdo",
+    "id": "cv-work-experience-bdo-1",
     "title": "Work Experience - BDO",
     "category": "work experience",
     "section": "WORK EXPERIENCE",
     "chunk_index": 12,
-    "content": "BDO\t2023 – Present\nSENIOR AI AND DATA SCIENCE DEVELOPER\nDesigned and deployed agentic AI solutions using Semantic Kernel, Azure AI Foundry, MCP, n8n, and related agentic AI technologies, enabling multi-agent collaboration, enterprise system integration, dynamic workflow orchestration, and autonomous task execution.\nDesigned and implemented production Retrieval-Augmented Generation (RAG) systems used by over 900 employees, using Azure OpenAI, Azure AI Search, FastAPI, and Docker, leveraging prompt optimization, retrieval tuning, automated evaluation workflows and CI/CD-driven deployment processes to deliver citation-grounded enterprise knowledge retrieval solutions.\nDeveloped intelligent document-processing solutions using OCR, LLMs, and LlamaIndex to automate document generation and transform unstructured content into structured business data, reducing manual processing time from several hours to less than 5 minutes.\nDeveloped machine learning and deep learning models for classification, regression, and time-series forecasting to predict factory incidents, machinery overloads, and sensor values. Improved model accuracy and reliability through advanced feature engineering, hyperparameter tuning, custom loss functions, and model evaluation techniques, enabling proactive incident prevention and reducing operational downtime.\nProvided technical leadership through architecture reviews, pull request reviews, technology evaluations, and collaborative solution design, helping teams scale AI and data-driven solutions from proof-of-concept to production.\nConducted technical interviews, mentored junior team members, facilitated knowledge-sharing sessions, and collaborated with stakeholders to identify business requirements and recommend AI-driven technology solutions.",
+    "content": "BDO\t2023 – Present\nSENIOR AI AND DATA SCIENCE DEVELOPER\nDesigned and deployed agentic AI solutions using Semantic Kernel, Azure AI Foundry, MCP, n8n, and related agentic AI technologies, enabling multi-agent collaboration, enterprise system integration, dynamic workflow orchestration, and autonomous task execution.",
     "source_ref": {
       "document_url": "/cv.html",
       "anchor": "chunk-12"
     }
   },
   {
-    "id": "cv-work-experience-qohash-inc",
-    "title": "Work Experience - Qohash Inc.",
+    "id": "cv-work-experience-bdo-2",
+    "title": "Work Experience - BDO",
     "category": "work experience",
     "section": "WORK EXPERIENCE",
     "chunk_index": 13,
-    "content": "Qohash Inc.\t2022 – 2023\nDATA SCIENTIST\nBuilt several machine learning models end-to-end, encompassing data preparation, augmentation, preprocessing, tokenization, model training, hyperparameter tuning, and testing.\nCreated a text classifier that provided both predictions and explanations by identifying the words with the greatest influence on each prediction, improving model interpretability for clients.\nConstructed an Optical Character Recognition (OCR) system to extract text from images and documents containing embedded images. Added a model to the OCR pipeline to determine whether an image contained text before processing it.\nCollaborated with software developers to efficiently implement machine learning models into the product.",
+    "content": "BDO\t2023 – Present\nSENIOR AI AND DATA SCIENCE DEVELOPER\nDesigned and implemented production Retrieval-Augmented Generation (RAG) systems used by over 900 employees, using Azure OpenAI, Azure AI Search, FastAPI, and Docker, leveraging prompt optimization, retrieval tuning, automated evaluation workflows and CI/CD-driven deployment processes to deliver citation-grounded enterprise knowledge retrieval solutions.",
     "source_ref": {
       "document_url": "/cv.html",
       "anchor": "chunk-13"
     }
   },
   {
-    "id": "cv-work-experience-privy-council-office",
-    "title": "Work Experience - Privy Council Office",
+    "id": "cv-work-experience-bdo-3",
+    "title": "Work Experience - BDO",
     "category": "work experience",
     "section": "WORK EXPERIENCE",
     "chunk_index": 14,
-    "content": "Privy Council Office\t2020 – 2022\nDATA SCIENTIST\nUtilized Python and R to preprocess vast datasets and create compelling visualizations to aid executives in decision-making.\nEmployed text mining techniques to extract valuable insights from survey text responses and conduct web scraping to seamlessly acquire data from various online sources.\nCreated databases, modified them using SQL and used them to increase efficiency.\nPrepared, combined and cleaned large amounts of data in Tableau Prep and Power Queries.\nCreated powerful dashboards in Tableau and Power BI.",
+    "content": "BDO\t2023 – Present\nSENIOR AI AND DATA SCIENCE DEVELOPER\nDeveloped intelligent document-processing solutions using OCR, LLMs, and LlamaIndex to automate document generation and transform unstructured content into structured business data, reducing manual processing time from several hours to less than 5 minutes.",
     "source_ref": {
       "document_url": "/cv.html",
       "anchor": "chunk-14"
+    }
+  },
+  {
+    "id": "cv-work-experience-bdo-4",
+    "title": "Work Experience - BDO",
+    "category": "work experience",
+    "section": "WORK EXPERIENCE",
+    "chunk_index": 15,
+    "content": "BDO\t2023 – Present\nSENIOR AI AND DATA SCIENCE DEVELOPER\nDeveloped machine learning and deep learning models for classification, regression, and time-series forecasting to predict factory incidents, machinery overloads, and sensor values. Improved model accuracy and reliability through advanced feature engineering, hyperparameter tuning, custom loss functions, and model evaluation techniques, enabling proactive incident prevention and reducing operational downtime.",
+    "source_ref": {
+      "document_url": "/cv.html",
+      "anchor": "chunk-15"
+    }
+  },
+  {
+    "id": "cv-work-experience-bdo-5",
+    "title": "Work Experience - BDO",
+    "category": "work experience",
+    "section": "WORK EXPERIENCE",
+    "chunk_index": 16,
+    "content": "BDO\t2023 – Present\nSENIOR AI AND DATA SCIENCE DEVELOPER\nProvided technical leadership through architecture reviews, pull request reviews, technology evaluations, and collaborative solution design, helping teams scale AI and data-driven solutions from proof-of-concept to production.",
+    "source_ref": {
+      "document_url": "/cv.html",
+      "anchor": "chunk-16"
+    }
+  },
+  {
+    "id": "cv-work-experience-bdo-6",
+    "title": "Work Experience - BDO",
+    "category": "work experience",
+    "section": "WORK EXPERIENCE",
+    "chunk_index": 17,
+    "content": "BDO\t2023 – Present\nSENIOR AI AND DATA SCIENCE DEVELOPER\nConducted technical interviews, mentored junior team members, facilitated knowledge-sharing sessions, and collaborated with stakeholders to identify business requirements and recommend AI-driven technology solutions.",
+    "source_ref": {
+      "document_url": "/cv.html",
+      "anchor": "chunk-17"
+    }
+  },
+  {
+    "id": "cv-work-experience-qohash-inc-1",
+    "title": "Work Experience - Qohash Inc.",
+    "category": "work experience",
+    "section": "WORK EXPERIENCE",
+    "chunk_index": 18,
+    "content": "Qohash Inc.\t2022 – 2023\nDATA SCIENTIST\nBuilt several machine learning models end-to-end, encompassing data preparation, augmentation, preprocessing, tokenization, model training, hyperparameter tuning, and testing.",
+    "source_ref": {
+      "document_url": "/cv.html",
+      "anchor": "chunk-18"
+    }
+  },
+  {
+    "id": "cv-work-experience-qohash-inc-2",
+    "title": "Work Experience - Qohash Inc.",
+    "category": "work experience",
+    "section": "WORK EXPERIENCE",
+    "chunk_index": 19,
+    "content": "Qohash Inc.\t2022 – 2023\nDATA SCIENTIST\nCreated a text classifier that provided both predictions and explanations by identifying the words with the greatest influence on each prediction, improving model interpretability for clients.",
+    "source_ref": {
+      "document_url": "/cv.html",
+      "anchor": "chunk-19"
+    }
+  },
+  {
+    "id": "cv-work-experience-qohash-inc-3",
+    "title": "Work Experience - Qohash Inc.",
+    "category": "work experience",
+    "section": "WORK EXPERIENCE",
+    "chunk_index": 20,
+    "content": "Qohash Inc.\t2022 – 2023\nDATA SCIENTIST\nConstructed an Optical Character Recognition (OCR) system to extract text from images and documents containing embedded images. Added a model to the OCR pipeline to determine whether an image contained text before processing it.",
+    "source_ref": {
+      "document_url": "/cv.html",
+      "anchor": "chunk-20"
+    }
+  },
+  {
+    "id": "cv-work-experience-qohash-inc-4",
+    "title": "Work Experience - Qohash Inc.",
+    "category": "work experience",
+    "section": "WORK EXPERIENCE",
+    "chunk_index": 21,
+    "content": "Qohash Inc.\t2022 – 2023\nDATA SCIENTIST\nCollaborated with software developers to efficiently implement machine learning models into the product.",
+    "source_ref": {
+      "document_url": "/cv.html",
+      "anchor": "chunk-21"
+    }
+  },
+  {
+    "id": "cv-work-experience-privy-council-office-1",
+    "title": "Work Experience - Privy Council Office",
+    "category": "work experience",
+    "section": "WORK EXPERIENCE",
+    "chunk_index": 22,
+    "content": "Privy Council Office\t2020 – 2022\nDATA SCIENTIST\nUtilized Python and R to preprocess vast datasets and create compelling visualizations to aid executives in decision-making.",
+    "source_ref": {
+      "document_url": "/cv.html",
+      "anchor": "chunk-22"
+    }
+  },
+  {
+    "id": "cv-work-experience-privy-council-office-2",
+    "title": "Work Experience - Privy Council Office",
+    "category": "work experience",
+    "section": "WORK EXPERIENCE",
+    "chunk_index": 23,
+    "content": "Privy Council Office\t2020 – 2022\nDATA SCIENTIST\nEmployed text mining techniques to extract valuable insights from survey text responses and conduct web scraping to seamlessly acquire data from various online sources.",
+    "source_ref": {
+      "document_url": "/cv.html",
+      "anchor": "chunk-23"
+    }
+  },
+  {
+    "id": "cv-work-experience-privy-council-office-3",
+    "title": "Work Experience - Privy Council Office",
+    "category": "work experience",
+    "section": "WORK EXPERIENCE",
+    "chunk_index": 24,
+    "content": "Privy Council Office\t2020 – 2022\nDATA SCIENTIST\nCreated databases, modified them using SQL and used them to increase efficiency.",
+    "source_ref": {
+      "document_url": "/cv.html",
+      "anchor": "chunk-24"
+    }
+  },
+  {
+    "id": "cv-work-experience-privy-council-office-4",
+    "title": "Work Experience - Privy Council Office",
+    "category": "work experience",
+    "section": "WORK EXPERIENCE",
+    "chunk_index": 25,
+    "content": "Privy Council Office\t2020 – 2022\nDATA SCIENTIST\nPrepared, combined and cleaned large amounts of data in Tableau Prep and Power Queries.",
+    "source_ref": {
+      "document_url": "/cv.html",
+      "anchor": "chunk-25"
+    }
+  },
+  {
+    "id": "cv-work-experience-privy-council-office-5",
+    "title": "Work Experience - Privy Council Office",
+    "category": "work experience",
+    "section": "WORK EXPERIENCE",
+    "chunk_index": 26,
+    "content": "Privy Council Office\t2020 – 2022\nDATA SCIENTIST\nCreated powerful dashboards in Tableau and Power BI.",
+    "source_ref": {
+      "document_url": "/cv.html",
+      "anchor": "chunk-26"
     }
   }
 ]
