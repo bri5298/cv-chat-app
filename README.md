@@ -180,6 +180,41 @@ Each record should include fields like:
 
 The backend searches this JSON file, sends the relevant records to Groq, and returns an answer with source titles.
 
+### Generate the Knowledge Base
+
+The knowledge base is generated from the source CV `.docx` file by running:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+python backend/scripts/generate_knowledge.py
+```
+
+By default, the script reads:
+
+```text
+backend/app/data/Brielle Johnston CV EN.docx
+```
+
+It then:
+
+- extracts the CV text from the `.docx` file
+- splits the CV into structured knowledge records for the RAG backend
+- writes the generated JSON to `backend/app/data/knowledge.json`
+- writes a browsable HTML version to `frontend/public/cv.html`
+- converts the source CV to `frontend/public/cv.pdf`
+
+The PDF conversion requires LibreOffice. The script looks for `soffice` or `libreoffice` on your `PATH`, or a default LibreOffice installation path on Windows or macOS.
+
+You can override the input and output paths if needed:
+
+```powershell
+python backend/scripts/generate_knowledge.py `
+  --cv "path/to/cv.docx" `
+  --output backend/app/data/knowledge.json `
+  --html-output frontend/public/cv.html `
+  --pdf-output frontend/public/cv.pdf
+```
+
 ## Deployment Notes
 
 The Vercel API entry point is:
