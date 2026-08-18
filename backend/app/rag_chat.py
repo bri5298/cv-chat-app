@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import re
 from pathlib import Path
@@ -8,18 +9,20 @@ import groq
 from fastapi import HTTPException
 from groq import Groq
 
-from backend.app.models import Source
+from backend.app.models import ChatMessage, Source
 from backend.app.constants import (
     FALLBACK_MODEL_IDS,
     FALLBACK_ERROR_TERMS,
     TEMPERATURE,
     ANSWER_MAX_TOKENS,
+    MAX_HISTORY_USER_MESSAGES
 )
 
 
 KNOWLEDGE_PATH = os.path.join(Path(__file__).parent, "data", "knowledge.json")
 SYSTEM_PROMPT_PATH = Path(__file__).parent / "prompts" / "system.md"
 SYSTEM_MESSAGE = SYSTEM_PROMPT_PATH.read_text(encoding="utf-8").strip()
+logger = logging.getLogger(__name__)
 CHUNK_INDEX_PATTERN = re.compile(r"<<\s*(?:chunk[-_\s]?index\s*[-=:]?\s*)?(\d+)\s*>>", re.IGNORECASE)
 SOURCE_MARKER_BLOCK_PATTERN = re.compile(r"<<\s*([^<>]+?)\s*>>")
 INTEGER_PATTERN = re.compile(r"\d+")
@@ -64,6 +67,46 @@ def create_model_context(records: list[dict[str, Any]]) -> str:
         )
         for index, record in enumerate(records)
     )
+
+
+def create_history_context(history: list[ChatMessage], current_message: str) -> str:
+    current_message = current_message.strip()
+    user_messages = [
+        item.content.strip()
+        for item in history
+        if item.role == "user" and item.content.strip()
+    ]
+
+    previous_user_messages = user_messages[:-1]
+
+    numbered_user_messages = list(enumerate(previous_user_messages, start=1))
+    recent_messages = numbered_user_messages[-MAX_HISTORY_USER_MESSAGES:]
+
+    if not recent_messages:
+        return ""
+
+    lines = "\n".join(
+        f"Question {question_number}: {message}"
+        for question_number, message in recent_messages
+    )
+    first_question_number = recent_messages[0][0]
+    last_question_number = recent_messages[-1][0]
+    total_question_count = len(previous_user_messages)
+    return (
+        f"Recent user questions {first_question_number}-{last_question_number} "
+        f"of {total_question_count}; earlier questions are omitted because only last {MAX_HISTORY_USER_MESSAGES} are shown:\n{lines}"
+    )
+
+
+def create_user_prompt(message: str, records: list[dict[str, Any]], history: list[ChatMessage]) -> str:
+    parts = [
+        f"Knowledge base context:\n{create_model_context(records)}",
+    ]
+    history_context = create_history_context(history, message)
+    if history_context:
+        parts.append(history_context)
+    parts.append(f"Current question:\n{message}")
+    return "\n\n".join(parts)
 
 
 def normalize_chunk_indexes(values: Any, valid_chunk_indexes: set[int]) -> set[int]:
@@ -139,7 +182,79 @@ def should_try_next_model(error: groq.BadRequestError) -> bool:
     return any(term in error_text for term in FALLBACK_ERROR_TERMS)
 
 
-def create_answer(message: str, records: list[dict[str, Any]]) -> tuple[str, set[int]]:
+def groq_error_text(error: Exception) -> str:
+    body = getattr(error, "body", None)
+    if isinstance(body, dict):
+        error_data = body.get("error")
+        if isinstance(error_data, dict):
+            return str(error_data.get("message") or error_data.get("code") or error_data)
+        return str(body)
+
+    return str(getattr(error, "message", "") or error)
+
+
+def groq_error_status_code(error: Exception) -> int:
+    if isinstance(error, groq.AuthenticationError):
+        return 500
+    if isinstance(error, groq.RateLimitError):
+        return 429
+    if isinstance(error, groq.APIConnectionError | groq.APITimeoutError | groq.InternalServerError):
+        return 503
+    if isinstance(error, groq.APIStatusError) and error.status_code == 413:
+        return 413
+
+    return 502
+
+
+def groq_error_detail(error: Exception) -> str:
+    error_text = groq_error_text(error)
+    normalized_error = error_text.lower()
+    model_issue_message = "The assistant hit a model issue. The site owner will need to fix it."
+
+    if isinstance(error, groq.AuthenticationError):
+        return model_issue_message
+
+    if isinstance(error, groq.PermissionDeniedError):
+        return model_issue_message
+
+    if isinstance(error, groq.NotFoundError) or "model_not_found" in normalized_error or "does not exist" in normalized_error:
+        return model_issue_message
+
+    if isinstance(error, groq.RateLimitError):
+        return "The assistant is receiving too many requests right now. Wait a bit and try again."
+
+    if isinstance(error, groq.APIConnectionError | groq.APITimeoutError):
+        return "The assistant could not reach the model provider. Try again in a moment."
+
+    if isinstance(error, groq.InternalServerError):
+        return "The model provider returned a server error. Try again in a moment."
+
+    if "request entity too large" in normalized_error or "request_too_large" in normalized_error:
+        return "The request is too large. Clear the conversation history and try again."
+
+    if any(term in normalized_error for term in ("context", "token", "maximum", "too large", "limit")):
+        return "The request is too large for the model. Clear the conversation history and try again."
+
+    if "response_format" in normalized_error or "json" in normalized_error:
+        return model_issue_message
+
+    if "unsupported" in normalized_error or "invalid" in normalized_error:
+        return model_issue_message
+
+    return model_issue_message
+
+
+def log_groq_error(model: str, error: Exception) -> None:
+    logger.warning(
+        "Groq request failed: model=%s error_type=%s status_code=%s error=%s",
+        model,
+        type(error).__name__,
+        getattr(error, "status_code", None),
+        groq_error_text(error),
+    )
+
+
+def create_answer(message: str, records: list[dict[str, Any]], history: list[ChatMessage] | None = None) -> tuple[str, set[int]]:
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise HTTPException(
@@ -157,6 +272,7 @@ def create_answer(message: str, records: list[dict[str, Any]]) -> tuple[str, set
 
     for model in FALLBACK_MODEL_IDS:
         try:
+            user_prompt = create_user_prompt(message, records, history or [])
             response = client.chat.completions.create(
                 model=model,
                 messages=[
@@ -166,7 +282,7 @@ def create_answer(message: str, records: list[dict[str, Any]]) -> tuple[str, set
                     },
                     {
                         "role": "user",
-                        "content": f"Knowledge base context:\n{create_model_context(records)}\n\nQuestion:\n{message}",
+                        "content": user_prompt,
                     },
                 ],
                 response_format={"type": "json_object"},
@@ -179,18 +295,34 @@ def create_answer(message: str, records: list[dict[str, Any]]) -> tuple[str, set
                 valid_chunk_indexes,
             )
         except groq.RateLimitError as error:
+            log_groq_error(model, error)
             last_error = error
         except groq.NotFoundError as error:
+            log_groq_error(model, error)
             last_error = error
         except groq.BadRequestError as error:
+            log_groq_error(model, error)
             if not should_try_next_model(error):
                 raise HTTPException(
-                    status_code=502,
-                    detail="The chat model rejected the request.",
+                    status_code=groq_error_status_code(error),
+                    detail=groq_error_detail(error),
                 ) from error
             last_error = error
+        except (
+            groq.AuthenticationError,
+            groq.PermissionDeniedError,
+            groq.APIConnectionError,
+            groq.APITimeoutError,
+            groq.InternalServerError,
+            groq.APIStatusError,
+        ) as error:
+            log_groq_error(model, error)
+            raise HTTPException(
+                status_code=groq_error_status_code(error),
+                detail=groq_error_detail(error),
+            ) from error
 
     raise HTTPException(
-        status_code=503,
-        detail="All configured Groq models are currently unavailable or over limit.",
+        status_code=groq_error_status_code(last_error) if last_error else 503,
+        detail=groq_error_detail(last_error) if last_error else "The assistant hit a model issue. Try again later.",
     ) from last_error

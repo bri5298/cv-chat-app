@@ -34,7 +34,7 @@ def chat(request: ChatRequest) -> ChatResponse:
     if not records:
         return ChatResponse(answer="I do not know.", sources=[])
 
-    answer, used_chunk_indexes = create_answer(request.message, records)
+    answer, used_chunk_indexes = create_answer(request.message, records, request.history)
     sources = [
         source_from_record(record, index)
         for index, record in enumerate(records)

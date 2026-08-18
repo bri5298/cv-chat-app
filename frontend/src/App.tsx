@@ -146,9 +146,9 @@ function App() {
       };
 
       setMessages([...nextMessages, assistantMessage]);
-    } catch {
-      setError("Something went wrong while asking the CV assistant.");
-      setMessages(messages);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Something went wrong while asking the CV assistant.");
+      setMessages(nextMessages);
     } finally {
       setIsLoading(false);
     }
@@ -338,7 +338,6 @@ function App() {
                   }
                 }}
                 placeholder="Ask about skills, projects, or experience"
-                disabled={isLoading}
                 rows={1}
               />
             </div>

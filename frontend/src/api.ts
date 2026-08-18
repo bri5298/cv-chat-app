@@ -14,8 +14,27 @@ export async function sendChatMessage(
   });
 
   if (!response.ok) {
-    throw new Error("Unable to get a response from the chat API.");
+    throw new Error(await getChatErrorMessage(response));
   }
 
   return response.json();
+}
+
+async function getChatErrorMessage(response: Response): Promise<string> {
+  try {
+    const data: unknown = await response.json();
+
+    if (
+      typeof data === "object" &&
+      data !== null &&
+      "detail" in data &&
+      typeof data.detail === "string"
+    ) {
+      return data.detail;
+    }
+  } catch {
+    // Fall through to the generic message.
+  }
+
+  return "Unable to get a response from the chat API.";
 }
