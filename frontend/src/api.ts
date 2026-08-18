@@ -1,4 +1,4 @@
-import type { ChatRequest, ChatResponse } from "./types";
+import type { ChatRequest, ChatResponse, ErrorReportRequest, ErrorReportResponse } from "./types";
 
 const API_BASE_URL = "/api";
 
@@ -14,13 +14,38 @@ export async function sendChatMessage(
   });
 
   if (!response.ok) {
-    throw new Error(await getChatErrorMessage(response));
+    throw new Error(await getApiErrorMessage(response, "Unable to get a response from the chat API."));
   }
 
   return response.json();
 }
 
-async function getChatErrorMessage(response: Response): Promise<string> {
+export async function sendErrorReport(
+  request: ErrorReportRequest,
+): Promise<ErrorReportResponse> {
+  const response = await fetch(`${API_BASE_URL}/error-report`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      error_message: request.errorMessage,
+      last_user_message: request.lastUserMessage,
+      recent_conversation: request.recentConversation,
+      page_url: request.pageUrl,
+      user_agent: request.userAgent,
+      timestamp: request.timestamp,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await getApiErrorMessage(response, "Unable to send the error report right now."));
+  }
+
+  return response.json();
+}
+
+async function getApiErrorMessage(response: Response, fallbackMessage: string): Promise<string> {
   try {
     const data: unknown = await response.json();
 
@@ -36,5 +61,5 @@ async function getChatErrorMessage(response: Response): Promise<string> {
     // Fall through to the generic message.
   }
 
-  return "Unable to get a response from the chat API.";
+  return fallbackMessage;
 }

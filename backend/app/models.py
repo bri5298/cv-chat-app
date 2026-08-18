@@ -23,3 +23,12 @@ class Source(BaseModel):
 class ChatResponse(BaseModel):
     answer: str
     sources: list[Source]
+
+
+class ErrorReportRequest(BaseModel):
+    error_message: str
+    last_user_message: str | None = None
+    recent_conversation: list[ChatMessage] = Field(default_factory=list)
+    page_url: str | None = None
+    user_agent: str | None = None
+    timestamp: str | None = None

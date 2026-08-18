@@ -212,7 +212,7 @@
 
 .chat-panel {
   display: grid;
-  grid-template-rows: auto 1fr auto auto;
+  grid-template-rows: auto 1fr auto;
   min-height: 0;
   overflow: hidden;
   background: var(--surface);
@@ -377,6 +377,12 @@
 
 .message-assistant {
   align-self: flex-start;
+}
+
+.message-error {
+  border-color: var(--danger-border);
+  color: var(--danger);
+  background: var(--danger-bg);
 }
 
 .message-label {
@@ -627,12 +633,43 @@
   margin-top: 18px;
 }
 
-.error-message {
-  margin: 0;
-  padding: 12px 32px;
+.error-report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.error-report-actions button {
+  min-height: 34px;
+  padding: 7px 11px;
+  border: 1px solid var(--danger-border);
+  border-radius: 10px;
   color: var(--danger);
-  background: var(--danger-bg);
-  border-top: 1px solid var(--danger-border);
+  background: #ffffff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.error-report-actions button:hover:not(:disabled) {
+  background: #fff7f7;
+}
+
+.error-report-actions button:focus-visible {
+  outline: 3px solid rgba(220, 38, 38, 0.18);
+  outline-offset: 2px;
+}
+
+.error-report-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.error-report-actions span {
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .composer {

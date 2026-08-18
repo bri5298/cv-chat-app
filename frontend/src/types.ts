@@ -21,3 +21,16 @@ export type ChatResponse = {
   answer: string;
   sources: Source[];
 };
+
+export type ErrorReportRequest = {
+  errorMessage: string;
+  lastUserMessage?: string;
+  recentConversation: ChatMessage[];
+  pageUrl?: string;
+  userAgent?: string;
+  timestamp?: string;
+};
+
+export type ErrorReportResponse = {
+  status: "sent";
+};

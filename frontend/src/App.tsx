@@ -1,14 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEventHandler } from "react";
-import { sendChatMessage } from "./api";
+import { sendChatMessage, sendErrorReport } from "./api";
 import { faqItems } from "./content/faq.ts";
 import { DownloadIcon } from "./icons/DownloadIcon";
-import type { ChatMessage, Source } from "./types";
+import type { ChatMessage, ErrorReportRequest, Source } from "./types";
 import "./App.css";
 
 type ConversationMessage = ChatMessage & {
   sources?: Source[];
+  isError?: boolean;
+  errorReport?: ErrorReportRequest;
 };
+
+type ErrorReportStatus = "idle" | "sending" | "sent" | "failed";
 
 const suggestedQuestions = [
   "Has she taken AI solutions from prototype to production?",
@@ -62,7 +66,8 @@ function App() {
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [errorReportStatus, setErrorReportStatus] = useState<ErrorReportStatus>("idle");
+  const [errorReportFeedback, setErrorReportFeedback] = useState("");
   const [expandedSourceKey, setExpandedSourceKey] = useState<string | null>(null);
   const [selectedFaqIndex, setSelectedFaqIndex] = useState<number | null>(null);
   const [modalSource, setModalSource] = useState<Source | null>(null);
@@ -128,7 +133,8 @@ function App() {
 
     setMessages(nextMessages);
     setInput("");
-    setError("");
+    setErrorReportStatus("idle");
+    setErrorReportFeedback("");
     setExpandedSourceKey(null);
     setModalSource(null);
     setIsLoading(true);
@@ -147,22 +153,58 @@ function App() {
 
       setMessages([...nextMessages, assistantMessage]);
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Something went wrong while asking the CV assistant.");
-      setMessages(nextMessages);
+      const errorMessage = error instanceof Error ? error.message : "Something went wrong while asking the CV assistant.";
+      const errorReport: ErrorReportRequest = {
+        errorMessage,
+        lastUserMessage: message,
+        recentConversation: nextMessages.slice(-6).map(({ role, content }) => ({ role, content })),
+        pageUrl: window.location.href,
+        userAgent: navigator.userAgent,
+        timestamp: new Date().toISOString(),
+      };
+      const assistantErrorMessage: ConversationMessage = {
+        role: "assistant",
+        content: errorMessage,
+        isError: true,
+        errorReport,
+      };
+
+      setErrorReportStatus("idle");
+      setErrorReportFeedback("");
+      setMessages([...nextMessages, assistantErrorMessage]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSendErrorReport = async (errorReport: ErrorReportRequest) => {
+    if (errorReportStatus === "sending" || errorReportStatus === "sent") {
+      return;
+    }
+
+    setErrorReportStatus("sending");
+    setErrorReportFeedback("");
+
+    try {
+      await sendErrorReport(errorReport);
+      setErrorReportStatus("sent");
+      setErrorReportFeedback("Error report sent.");
+    } catch (error) {
+      setErrorReportStatus("failed");
+      setErrorReportFeedback(error instanceof Error ? error.message : "Unable to send the error report right now.");
     }
   };
 
   const handleClearConversation = () => {
     setMessages([]);
     setInput("");
-    setError("");
+    setErrorReportStatus("idle");
+    setErrorReportFeedback("");
     setExpandedSourceKey(null);
     setModalSource(null);
   };
 
-  const canClearConversation = messages.length > 0 || input.trim().length > 0 || Boolean(error);
+  const canClearConversation = messages.length > 0 || input.trim().length > 0;
 
   return (
     <main className="app-shell">
@@ -255,13 +297,32 @@ function App() {
 
                 return (
                   <article
-                    className={`message message-${message.role}`}
+                    className={`message message-${message.role}${message.isError ? " message-error" : ""}`}
                     key={`${message.role}-${index}`}
+                    role={message.isError ? "alert" : undefined}
                   >
                     <div className="message-label">
                       {message.role === "user" ? "You" : "Assistant"}
                     </div>
                     <p>{message.content}</p>
+
+                    {message.isError && message.errorReport ? (
+                      <div className="error-report-actions">
+                        <button
+                          disabled={errorReportStatus === "sending" || errorReportStatus === "sent"}
+                          onClick={() => handleSendErrorReport(message.errorReport as ErrorReportRequest)}
+                          type="button"
+                        >
+                          {errorReportStatus === "sending"
+                            ? "Sending report..."
+                            : errorReportStatus === "sent"
+                              ? "Report sent"
+                              : "Send error report"}
+                        </button>
+
+                        {errorReportFeedback ? <span>{errorReportFeedback}</span> : null}
+                      </div>
+                    ) : null}
 
                     {message.sources && message.sources.length > 0 ? (
                       <>
@@ -318,8 +379,6 @@ function App() {
               </article>
             ) : null}
           </div>
-
-          {error ? <p className="error-message">{error}</p> : null}
 
           <form className="composer" onSubmit={handleSubmit} autoComplete="off">
             <div className="input-wrap">
