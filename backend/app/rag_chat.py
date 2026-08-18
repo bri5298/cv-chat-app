@@ -244,6 +244,41 @@ def groq_error_detail(error: Exception) -> str:
     return model_issue_message
 
 
+def groq_error_reportable(error: Exception) -> bool:
+    error_text = groq_error_text(error)
+    normalized_error = error_text.lower()
+
+    if isinstance(error, groq.AuthenticationError | groq.PermissionDeniedError | groq.NotFoundError):
+        return True
+
+    if isinstance(error, groq.RateLimitError | groq.APIConnectionError | groq.APITimeoutError | groq.InternalServerError):
+        return False
+
+    if isinstance(error, groq.APIStatusError) and error.status_code == 413:
+        return False
+
+    if "request entity too large" in normalized_error or "request_too_large" in normalized_error:
+        return False
+
+    if any(term in normalized_error for term in ("context", "token", "maximum", "too large", "limit")):
+        return False
+
+    if "model_not_found" in normalized_error or "does not exist" in normalized_error:
+        return True
+
+    if "response_format" in normalized_error or "json" in normalized_error:
+        return True
+
+    if "unsupported" in normalized_error or "invalid" in normalized_error:
+        return True
+
+    return True
+
+
+def chat_error_detail(message: str, reportable: bool) -> dict[str, Any]:
+    return {"message": message, "reportable": reportable}
+
+
 def log_groq_error(model: str, error: Exception) -> None:
     logger.warning(
         "Groq request failed: model=%s error_type=%s status_code=%s error=%s",
@@ -259,7 +294,7 @@ def create_answer(message: str, records: list[dict[str, Any]], history: list[Cha
     if not api_key:
         raise HTTPException(
             status_code=500,
-            detail="The assistant is not configured correctly.",
+            detail=chat_error_detail("The assistant is not configured correctly.", True),
         )
 
     client = Groq(api_key=api_key)
@@ -305,7 +340,7 @@ def create_answer(message: str, records: list[dict[str, Any]], history: list[Cha
             if not should_try_next_model(error):
                 raise HTTPException(
                     status_code=groq_error_status_code(error),
-                    detail=groq_error_detail(error),
+                    detail=chat_error_detail(groq_error_detail(error), groq_error_reportable(error)),
                 ) from error
             last_error = error
         except (
@@ -319,10 +354,13 @@ def create_answer(message: str, records: list[dict[str, Any]], history: list[Cha
             log_groq_error(model, error)
             raise HTTPException(
                 status_code=groq_error_status_code(error),
-                detail=groq_error_detail(error),
+                detail=chat_error_detail(groq_error_detail(error), groq_error_reportable(error)),
             ) from error
 
     raise HTTPException(
         status_code=groq_error_status_code(last_error) if last_error else 503,
-        detail=groq_error_detail(last_error) if last_error else "The assistant hit a model issue. Try again later.",
+        detail=chat_error_detail(
+            groq_error_detail(last_error) if last_error else "The assistant hit a model issue. Try again later.",
+            groq_error_reportable(last_error) if last_error else True,
+        ),
     ) from last_error

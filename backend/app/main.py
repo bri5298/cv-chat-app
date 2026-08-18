@@ -64,6 +64,7 @@ def create_error_report_email(request: ErrorReportRequest) -> str:
     return "\n\n".join(
         [
             "A CV Assistant user submitted an error report.",
+            f"Report ID:\n{truncate_text(request.report_id, 120) or 'Not provided.'}",
             f"Error:\n{truncate_text(request.error_message, MAX_ERROR_TEXT_LENGTH)}",
             f"Last user message:\n{truncate_text(request.last_user_message, MAX_CONTEXT_TEXT_LENGTH) or 'Not provided.'}",
             f"Recent conversation:\n{format_conversation(request.recent_conversation)}",
@@ -74,12 +75,12 @@ def create_error_report_email(request: ErrorReportRequest) -> str:
     )
 
 
-def send_error_report_email(api_key: str, from_email: str, to_email: str, body: str) -> None:
+def send_error_report_email(api_key: str, from_email: str, to_email: str, subject: str, body: str) -> None:
     payload = json.dumps(
         {
             "from": from_email,
             "to": [to_email],
-            "subject": "CV chat app Vercel error reported!",
+            "subject": subject,
             "text": body,
         }
     ).encode("utf-8")
@@ -107,7 +108,20 @@ def chat(request: ChatRequest) -> ChatResponse:
     if not records:
         return ChatResponse(answer="I do not know.", sources=[])
 
-    answer, used_chunk_indexes = create_answer(request.message, records, request.history)
+    try:
+        answer, used_chunk_indexes = create_answer(request.message, records, request.history)
+    except HTTPException as error:
+        logger.warning(
+            "Chat request failed: report_id=%s status_code=%s detail=%s",
+            request.report_id or "not-provided",
+            error.status_code,
+            error.detail,
+        )
+        raise
+    except Exception:
+        logger.exception("Unexpected chat request failed: report_id=%s", request.report_id or "not-provided")
+        raise
+
     sources = [
         source_from_record(record, index)
         for index, record in enumerate(records)
@@ -122,6 +136,9 @@ def report_error(request: ErrorReportRequest) -> dict[str, str]:
     if not request.error_message.strip():
         raise HTTPException(status_code=400, detail="An error message is required.")
 
+    if not request.reportable:
+        raise HTTPException(status_code=400, detail="This error is not reportable.")
+
     api_key = os.getenv("RESEND_API_KEY", "").strip()
     from_email = os.getenv("ERROR_REPORT_FROM_EMAIL", "").strip()
     to_email = os.getenv("ERROR_REPORT_TO_EMAIL", "").strip()
@@ -130,10 +147,20 @@ def report_error(request: ErrorReportRequest) -> dict[str, str]:
         logger.error("Error report email is not configured.")
         raise HTTPException(status_code=500, detail="Error reporting is not configured.")
 
+    report_id = truncate_text(request.report_id, 120) or "not-provided"
+    logger.info("Sending user error report email: report_id=%s", report_id)
+
     try:
-        send_error_report_email(api_key, from_email, to_email, create_error_report_email(request))
+        send_error_report_email(
+            api_key,
+            from_email,
+            to_email,
+            f"CV chat app error report ({report_id})",
+            create_error_report_email(request),
+        )
     except (urllib.error.URLError, TimeoutError, RuntimeError) as error:
-        logger.exception("Failed to send error report email.")
+        logger.exception("Failed to send error report email: report_id=%s", report_id)
         raise HTTPException(status_code=502, detail="Unable to send the error report right now.") from error
 
+    logger.info("Sent user error report email: report_id=%s", report_id)
     return {"status": "sent"}

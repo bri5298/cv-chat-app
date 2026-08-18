@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEventHandler } from "react";
-import { sendChatMessage, sendErrorReport } from "./api";
+import { ApiError, sendChatMessage, sendErrorReport } from "./api";
 import { faqItems } from "./content/faq.ts";
 import { DownloadIcon } from "./icons/DownloadIcon";
 import type { ChatMessage, ErrorReportRequest, Source } from "./types";
@@ -9,6 +9,7 @@ import "./App.css";
 type ConversationMessage = ChatMessage & {
   sources?: Source[];
   isError?: boolean;
+  errorDetail?: string;
   errorReport?: ErrorReportRequest;
 };
 
@@ -19,6 +20,14 @@ const suggestedQuestions = [
   "What backend systems has she built for AI applications?",
   "What machine learning solutions has she built?",
 ];
+
+function createReportId() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return `report-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
 
 function getSourceUrl(source: Source) {
   return `${source.document_url ?? "/cv.html"}#${source.anchor ?? `chunk-${source.chunk_index}`}`;
@@ -130,6 +139,7 @@ function App() {
     };
 
     const nextMessages = [...messages, userMessage];
+    const reportId = createReportId();
 
     setMessages(nextMessages);
     setInput("");
@@ -143,6 +153,7 @@ function App() {
       const response = await sendChatMessage({
         message,
         history: nextMessages.map(({ role, content }) => ({ role, content })),
+        reportId,
       });
 
       const assistantMessage: ConversationMessage = {
@@ -154,18 +165,24 @@ function App() {
       setMessages([...nextMessages, assistantMessage]);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Something went wrong while asking the CV assistant.";
-      const errorReport: ErrorReportRequest = {
+      const isReportable = error instanceof ApiError ? error.reportable : true;
+      const errorReport: ErrorReportRequest | undefined = isReportable ? {
+        reportId,
+        reportable: isReportable,
         errorMessage,
         lastUserMessage: message,
         recentConversation: nextMessages.slice(-6).map(({ role, content }) => ({ role, content })),
         pageUrl: window.location.href,
         userAgent: navigator.userAgent,
         timestamp: new Date().toISOString(),
-      };
+      } : undefined;
       const assistantErrorMessage: ConversationMessage = {
         role: "assistant",
-        content: errorMessage,
+        content: isReportable
+          ? "I could not get a response from the CV assistant. You can try again, or send Brielle the details so she can look into it."
+          : "I could not get a response from the CV assistant. Try the suggested step below, then ask again.",
         isError: true,
+        errorDetail: errorMessage,
         errorReport,
       };
 
@@ -188,10 +205,10 @@ function App() {
     try {
       await sendErrorReport(errorReport);
       setErrorReportStatus("sent");
-      setErrorReportFeedback("Error report sent.");
+      setErrorReportFeedback("Thank you, Brielle has been sent the details.");
     } catch (error) {
       setErrorReportStatus("failed");
-      setErrorReportFeedback(error instanceof Error ? error.message : "Unable to send the error report right now.");
+      setErrorReportFeedback(error instanceof Error ? error.message : "The report could not be sent right now.");
     }
   };
 
@@ -304,7 +321,25 @@ function App() {
                     <div className="message-label">
                       {message.role === "user" ? "You" : "Assistant"}
                     </div>
-                    <p>{message.content}</p>
+
+                    {message.isError ? (
+                      <div className="error-report-panel">
+                        <div className="error-report-copy">
+                          <p className="error-report-title">Something went wrong</p>
+                          <p>{message.content}</p>
+                          {message.errorReport ? (
+                            <>
+                              <p className="error-report-detail">Details: {message.errorReport.errorMessage}</p>
+                              <p className="error-report-id">Report ID: {message.errorReport.reportId}</p>
+                            </>
+                          ) : (
+                            <p className="error-report-detail">Details: {message.errorDetail}</p>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <p>{message.content}</p>
+                    )}
 
                     {message.isError && message.errorReport ? (
                       <div className="error-report-actions">
@@ -314,10 +349,10 @@ function App() {
                           type="button"
                         >
                           {errorReportStatus === "sending"
-                            ? "Sending report..."
+                            ? "Sending report"
                             : errorReportStatus === "sent"
                               ? "Report sent"
-                              : "Send error report"}
+                              : "Notify Brielle"}
                         </button>
 
                         {errorReportFeedback ? <span>{errorReportFeedback}</span> : null}

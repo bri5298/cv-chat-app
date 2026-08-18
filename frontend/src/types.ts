@@ -10,6 +10,7 @@ export type Source = {
 export type ChatRequest = {
   message: string;
   history: ChatMessage[];
+  reportId?: string;
 };
 
 export type ChatMessage = {
@@ -23,6 +24,8 @@ export type ChatResponse = {
 };
 
 export type ErrorReportRequest = {
+  reportId?: string;
+  reportable: boolean;
   errorMessage: string;
   lastUserMessage?: string;
   recentConversation: ChatMessage[];

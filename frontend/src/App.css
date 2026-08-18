@@ -381,8 +381,9 @@
 
 .message-error {
   border-color: var(--danger-border);
-  color: var(--danger);
-  background: var(--danger-bg);
+  color: #7f1d1d;
+  background: linear-gradient(180deg, #fffafa, var(--danger-bg));
+  box-shadow: 0 14px 34px rgba(127, 29, 29, 0.08);
 }
 
 .message-label {
@@ -397,6 +398,40 @@
   margin: 0;
   line-height: 1.58;
   white-space: pre-wrap;
+}
+
+.error-report-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.error-report-copy {
+  display: grid;
+  gap: 7px;
+}
+
+.error-report-copy .error-report-title {
+  color: #7f1d1d;
+  font-family: var(--heading-font);
+  font-size: 15px;
+  font-weight: 820;
+  line-height: 1.25;
+}
+
+.error-report-copy p:not(.error-report-title):not(.error-report-detail):not(.error-report-id) {
+  color: #991b1b;
+}
+
+.error-report-detail {
+  padding-top: 2px;
+  color: #b45309;
+  font-size: 13px;
+}
+
+.error-report-id {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 760;
 }
 
 .sources {
@@ -637,24 +672,28 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 12px;
+  gap: 9px 12px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(248, 113, 113, 0.22);
 }
 
 .error-report-actions button {
-  min-height: 34px;
-  padding: 7px 11px;
-  border: 1px solid var(--danger-border);
-  border-radius: 10px;
-  color: var(--danger);
-  background: #ffffff;
+  min-height: 38px;
+  padding: 8px 13px;
+  border: 1px solid rgba(185, 28, 28, 0.24);
+  border-radius: 12px;
+  color: #ffffff;
+  background: #b91c1c;
   font: inherit;
   font-size: 13px;
   font-weight: 800;
   cursor: pointer;
+  box-shadow: 0 10px 20px rgba(185, 28, 28, 0.16);
 }
 
 .error-report-actions button:hover:not(:disabled) {
-  background: #fff7f7;
+  background: #991b1b;
 }
 
 .error-report-actions button:focus-visible {
@@ -664,10 +703,13 @@
 
 .error-report-actions button:disabled {
   cursor: not-allowed;
-  opacity: 0.62;
+  background: #fca5a5;
+  box-shadow: none;
+  opacity: 0.76;
 }
 
 .error-report-actions span {
+  color: #7f1d1d;
   font-size: 13px;
   font-weight: 700;
 }

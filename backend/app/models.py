@@ -9,6 +9,7 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1)
     history: list[ChatMessage] = Field(default_factory=list)
+    report_id: str | None = None
 
 
 class Source(BaseModel):
@@ -26,6 +27,8 @@ class ChatResponse(BaseModel):
 
 
 class ErrorReportRequest(BaseModel):
+    report_id: str | None = None
+    reportable: bool = False
     error_message: str
     last_user_message: str | None = None
     recent_conversation: list[ChatMessage] = Field(default_factory=list)
