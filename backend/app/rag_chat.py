@@ -209,7 +209,7 @@ def groq_error_status_code(error: Exception) -> int:
 def groq_error_detail(error: Exception) -> str:
     error_text = groq_error_text(error)
     normalized_error = error_text.lower()
-    model_issue_message = "The assistant hit a model issue. The site owner will need to fix it."
+    model_issue_message = "There was a model issue. The site owner will need to fix it."
 
     if isinstance(error, groq.AuthenticationError):
         return model_issue_message
@@ -294,7 +294,7 @@ def create_answer(message: str, records: list[dict[str, Any]], history: list[Cha
     if not api_key:
         raise HTTPException(
             status_code=500,
-            detail=chat_error_detail("The assistant is not configured correctly.", True),
+            detail=chat_error_detail("Configuration error.", True),
         )
 
     client = Groq(api_key=api_key)
