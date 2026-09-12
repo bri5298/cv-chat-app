@@ -1,10 +1,10 @@
 DEFAULT_MODEL = "groq/compound-mini"
 FREE_MODEL_IDS = {
-    1: "openai/gpt-oss-20b", # reasoning model, but reasoning not used
-    2: "groq/compound",
-    3: "groq/compound-mini",
-    4: "qwen/qwen3.6-27b", # reasoning model, overkill for most CV questions
-    5: "openai/gpt-oss-120b", # reasoning model, heaviest fallback, overkill
+    1: "groq/compound",
+    2: "groq/compound-mini",
+    # 3: "openai/gpt-oss-20b", # reasoning model, but reasoning not used
+    # 4: "qwen/qwen3.6-27b", # reasoning model, overkill for most CV questions
+    # 5: "openai/gpt-oss-120b", # reasoning model, heaviest fallback, overkill
 }
 
 
