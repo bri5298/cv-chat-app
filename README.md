@@ -80,7 +80,55 @@ npm install
 
 Use two terminals.
 
-### Terminal 1: Backend
+### ON MAC Terminal 1: Backend
+
+From the repo root:
+
+```powershell
+source /Users/briellejohnston/Documents/Python/cv-chat-app/.venv/bin/activate
+uvicorn backend.app.main:app --reload --host localhost --port 8000
+```
+
+The backend runs at:
+
+```text
+http://localhost:8000
+```
+
+Health check:
+
+```text
+http://localhost:8000/health
+```
+
+### ON MAC: Terminal 2: Frontend
+
+From the repo root:
+
+```powershell
+cd frontend
+npm run dev
+```
+
+The frontend runs at:
+
+```text
+http://localhost:5173
+```
+
+In local development, the frontend calls:
+
+```text
+http://localhost:8000/chat
+```
+
+In production, it calls:
+
+```text
+/api/chat
+```
+
+### ON WINDOWS Terminal 1: Backend
 
 From the repo root:
 
@@ -102,7 +150,7 @@ Health check:
 http://localhost:8000/health
 ```
 
-### Terminal 2: Frontend
+### ON WINDOWS: Terminal 2: Frontend
 
 From the repo root:
 

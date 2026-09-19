@@ -288,6 +288,32 @@ def log_groq_error(model: str, error: Exception) -> None:
         groq_error_text(error),
     )
 
+_response_format={
+    "type": "json_schema",
+    "json_schema": {
+        "name": "cv_answer",
+        "strict": True,
+        "schema": {
+            "type": "object",
+            "properties": {
+                "answer": {
+                    "type": "string"
+                },
+                "chunk_indexes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "required": [
+                "answer",
+                "chunk_indexes"
+            ],
+            "additionalProperties": False
+        }
+    }
+}
 
 def create_answer(message: str, records: list[dict[str, Any]], history: list[ChatMessage] | None = None) -> tuple[str, set[int]]:
     api_key = os.getenv("GROQ_API_KEY")
@@ -320,7 +346,10 @@ def create_answer(message: str, records: list[dict[str, Any]], history: list[Cha
                         "content": user_prompt,
                     },
                 ],
-                response_format={"type": "json_object"},
+                # response_format={"type": "json_object"},
+                response_format=_response_format,
+                reasoning_format="hidden",
+                reasoning_effort="low",
                 temperature=TEMPERATURE,
                 max_tokens=ANSWER_MAX_TOKENS,
             )
